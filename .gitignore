@@ -1,0 +1,4 @@
+*.traineddata
+logs/*
+target/*
+*.png
