@@ -12,9 +12,21 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
-public class ScreenClipper extends JFrame implements IntellitypeListener, HotkeyListener {
+public class ScreenClipper implements IntellitypeListener, HotkeyListener {
     // Create a logger
     private static final Logger LOG = LogManager.getLogger(ScreenClipper.class);
+
+    // Create a robot, for taking screenshots
+    private static Robot robot = null;
+    // Handle AWTException in robot creation
+    static {
+        try {
+            robot = new Robot();
+        } catch (AWTException e) {
+            LOG.error(e.getMessage());
+        }
+    }
+
 
     private ArrayList<Rectangle> screenRects = new ArrayList<>();
     private ArrayList<MonitorOverlay> overlays = new ArrayList<>();
@@ -36,7 +48,6 @@ public class ScreenClipper extends JFrame implements IntellitypeListener, Hotkey
         }
 
         ScreenClipper app = new ScreenClipper();
-        app.setTitle("ScreenClipper");
 
         // Initialise JIntellitype
         app.initJIntellitype();
@@ -58,10 +69,22 @@ public class ScreenClipper extends JFrame implements IntellitypeListener, Hotkey
 
     }
 
-    public void createNewScreenCapture(Rectangle r, int monitorID) {
-        Rectangle screen = screenRects.get(monitorID);
-        System.out.println(r);
-        System.out.println(screen);
+    public void createNewScreenCapture() {
+        Rectangle r = null;
+        int monitorID = -1;
+        for(MonitorOverlay o : overlays) {
+            if (o.hasCapture()) {
+                r = o.getCaptureRect();
+                monitorID = o.getCaptureID();
+            }
+            o.reset(); // Clear monitor overlays
+        }
+
+        if (monitorID != -1 && r != null) {
+            Rectangle screen = screenRects.get(monitorID);
+            r.translate(screen.x, screen.y);
+            saveImage(robot.createScreenCapture(r));
+        }
     }
 
     private void saveImage(BufferedImage b) {

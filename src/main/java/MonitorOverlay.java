@@ -7,7 +7,7 @@ public class MonitorOverlay extends JFrame {
     private Rectangle screencapArea = new Rectangle();
     private Point screencapStart = new Point();
     private boolean screenshot;
-    private ScreenClipper parentFrame;
+    private ScreenClipper parent;
     private ScreencapController screencapController;
     private int captureID;
 
@@ -18,21 +18,21 @@ public class MonitorOverlay extends JFrame {
         setUndecorated(true);
         setBackground(new Color(0, 0, 0, 100));
 
-        parentFrame = p;
+        parent = p;
         captureID = id;
 
         addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                System.out.println(e);
                 screenshot = true;
                 screencapController = new ScreencapController(e.getPoint());
+                screencapController.setSize(getSize());
+                add(screencapController);
             }
 
             @Override
             public void mouseReleased(MouseEvent e) {
-                screenshot = false;
-                screencapController = null;
+                parent.createNewScreenCapture();
             }
         });
 
@@ -45,6 +45,12 @@ public class MonitorOverlay extends JFrame {
             }
         });
     }
+
+    public int getCaptureID() { return captureID; }
+
+    public Rectangle getCaptureRect() { return screencapController.capture(); }
+
+    public boolean hasCapture() { return screencapController != null; }
 
     public void toggle() {
         setVisible(!isVisible());
@@ -60,5 +66,10 @@ public class MonitorOverlay extends JFrame {
         screencapArea = new Rectangle();
         screencapStart = new Point();
         screenshot = false;
+        setVisible(false);
+        if (hasCapture()) {
+            remove(screencapController);
+            screencapController = null;
+        }
     }
 }
