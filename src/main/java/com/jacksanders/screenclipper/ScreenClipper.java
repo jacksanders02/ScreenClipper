@@ -3,6 +3,9 @@ package com.jacksanders.screenclipper;
 import com.melloware.jintellitype.HotkeyListener;
 import com.melloware.jintellitype.IntellitypeListener;
 import com.melloware.jintellitype.JIntellitype;
+import net.sourceforge.tess4j.Tesseract1;
+import net.sourceforge.tess4j.ITesseract;
+import net.sourceforge.tess4j.TesseractException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -36,6 +39,13 @@ public class ScreenClipper implements IntellitypeListener, HotkeyListener {
         }
     }
 
+    /** {@link Tesseract1} instance, to perform OCR */
+    private static ITesseract TESS = new Tesseract1();
+
+    static {
+        TESS.setDatapath("src/main/resources/tessdata");
+    }
+
     /** Stores position and size details of each different screen/monitor */
     private ArrayList<Rectangle> screenRects = new ArrayList<>();
 
@@ -52,7 +62,7 @@ public class ScreenClipper implements IntellitypeListener, HotkeyListener {
         // next check to make sure JIntellitype DLL can be found and we are on
         // a Windows operating System
         if (!JIntellitype.isJIntellitypeSupported()) {
-            LOG.fatal("Non-Windows operating system, or a problem with the JIntellitype library!");
+            LOG.fatal("Non-Windows operating system, or a problem with the JIntellitype library.");
             System.exit(1);
         }
 
@@ -106,21 +116,27 @@ public class ScreenClipper implements IntellitypeListener, HotkeyListener {
             LOG.info("Attempting new screen capture at " + r.getLocation() + " with size " + r.getSize());
             Rectangle screen = screenRects.get(monitorID);
             r.translate(screen.x, screen.y);
-            saveImage(robot.createScreenCapture(r));
-            LOG.info("Screen capture taken successfully!");
+            try {
+                BufferedImage capture = robot.createScreenCapture(r);
+                LOG.info("Screen capture taken successfully.");
+                readText(capture);
+            } catch (IllegalArgumentException e) {
+                LOG.error("Cannot create a capture with no area.");
+            }
         }
     }
 
     /**
-     * Saves a given {@link BufferedImage} to a file, temp.png
-     * @param b The BufferedImage to save
+     * Utilises Tesseract OCR to read text from an image, and output it.
+     * @param captureImage The {@link BufferedImage} from which text will be read.
      */
-    private void saveImage(BufferedImage b) {
-        File outFile = new File("temp.png");
+    private void readText(BufferedImage captureImage) {
         try {
-            ImageIO.write(b, "png", outFile);
-        } catch (IOException e) {
-            LOG.fatal(e.getMessage());
+            String outString = TESS.doOCR(captureImage);
+            System.out.println(outString);
+            LOG.info("Read text from screen capture successfully.");
+        } catch (TesseractException e) {
+            LOG.error(e.getMessage());
         }
     }
 
@@ -153,7 +169,7 @@ public class ScreenClipper implements IntellitypeListener, HotkeyListener {
     private void registerHotkeys() {
         // Create all required JIntelliType hotkeys with unique identifiers
         JIntellitype.getInstance().registerHotKey(1001, JIntellitype.MOD_ALT, 'A');
-        LOG.info("Hotkeys Successfully Registered!");
+        LOG.info("Hotkeys Successfully Registered.");
     }
 
     /**
@@ -166,7 +182,7 @@ public class ScreenClipper implements IntellitypeListener, HotkeyListener {
             LOG.info("JIntellitype initialized");
             registerHotkeys();
         } catch (RuntimeException ex) {
-            LOG.fatal("Either you are not on Windows, or there is a problem with the JIntellitype library!");
+            LOG.fatal("Either you are not on Windows, or there is a problem with the JIntellitype library.");
         }
     }
 }
