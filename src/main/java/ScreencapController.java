@@ -4,15 +4,14 @@ import org.apache.logging.log4j.Logger;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
 
-public class ScreenshotPanel extends JPanel {
+public class ScreencapController extends JPanel {
     // Create a logger
-    private static final Logger LOG = LogManager.getLogger(ScreenshotPanel.class);
+    private static final Logger LOG = LogManager.getLogger(ScreencapController.class);
 
     private final Rectangle originalRect;
     private Rectangle rect;
-    public ScreenshotPanel(Point s) {
+    public ScreencapController(Point s) {
         // Make a copy of original rect, used to ensure each drawn rect is made up of only two points
         originalRect = new Rectangle(s);
         rect = new Rectangle(originalRect);

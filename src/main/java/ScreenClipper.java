@@ -19,6 +19,8 @@ public class ScreenClipper extends JFrame implements IntellitypeListener, Hotkey
     private ArrayList<Rectangle> screenRects = new ArrayList<>();
     private ArrayList<MonitorOverlay> overlays = new ArrayList<>();
 
+    private ScreencapController screencapController;
+
     public static void main(String[] args) {
         // first check to see if an instance of this application is already
         // running, use the name of the window title of this JFrame for checking
@@ -56,6 +58,12 @@ public class ScreenClipper extends JFrame implements IntellitypeListener, Hotkey
 
     }
 
+    public void createNewScreenCapture(Rectangle r, int monitorID) {
+        Rectangle screen = screenRects.get(monitorID);
+        System.out.println(r);
+        System.out.println(screen);
+    }
+
     private void saveImage(BufferedImage b) {
         File outFile = new File("temp.png");
         try {
@@ -79,7 +87,7 @@ public class ScreenClipper extends JFrame implements IntellitypeListener, Hotkey
             if (overlays.size() > i) {
                 overlays.get(i).updateCoveredMonitor(bounds);
             } else {
-                overlays.add(new MonitorOverlay(bounds));
+                overlays.add(new MonitorOverlay(bounds, this, i));
             }
         }
     }
