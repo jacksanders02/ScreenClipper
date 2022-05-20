@@ -1,49 +1,23 @@
-import com.melloware.jintellitype.*;
-
+import com.melloware.jintellitype.HotkeyListener;
+import com.melloware.jintellitype.IntellitypeListener;
+import com.melloware.jintellitype.JIntellitype;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
 public class ScreenClipper extends JFrame implements IntellitypeListener, HotkeyListener {
     // Create a logger
     private static final Logger LOG = LogManager.getLogger(ScreenClipper.class);
 
-    // Create a robot, for taking screenshots
-    private static Robot robot = null;
-    // Handle AWTException in robot creation
-    static {
-        try {
-            robot = new Robot();
-        } catch (AWTException e) {
-            LOG.error(e.getMessage());
-        }
-    }
-
-    // Array of graphics devices (monitors)
-    private static GraphicsDevice[] devices = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices();
-
-    // Get default screen, and that screen's scale factor
-    private static GraphicsDevice defaultScreenDevice = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-    private static double screenScale = defaultScreenDevice.getDisplayMode().getWidth() / (double) defaultScreenDevice.getDefaultConfiguration().getBounds().width;
-
-    // Instance variables
-    private Rectangle screenBounds;
-    private ScreenshotPanel screenshotPanel;
-
-    public ScreenClipper() {
-        // Set frame to be undecorated (cannot be moved, no title bar/border), with a translucent background
-        setUndecorated(true);
-        setBackground(new Color(0, 0, 0, 100));
-
-        saveImage(robot.createScreenCapture(new Rectangle(-1920, -645, 1920, 1080)));
-    }
+    private ArrayList<Rectangle> screenRects = new ArrayList<>();
+    private ArrayList<MonitorOverlay> overlays = new ArrayList<>();
 
     public static void main(String[] args) {
         // first check to see if an instance of this application is already
@@ -70,19 +44,9 @@ public class ScreenClipper extends JFrame implements IntellitypeListener, Hotkey
     public void onHotKey(int i) {
         // Hotkey handlers
         if (i == 1001) { // ALT+A
-            if (isVisible()) {
-                // Hide if shown - allow user to 'back out' without screenshotting
-                setVisible(false);
-            } else {
-                calculateScreenBounds(); // Update screen bounds
-
-                setSize(screenBounds.getSize());
-                // Divide coordinates by scale factor - fixes frame being placed off screen if primary screen is scaled
-                // (e.g. laptops)
-                setLocation((int) (screenBounds.getLocation().x / screenScale), (int) (screenBounds.getLocation().y / screenScale));
-                setVisible(true); // Toggle visibility of overlay
-
-                addMouseListeners();
+            calculateScreenBounds(); // Update display information
+            for (MonitorOverlay o : overlays) {
+                o.toggle();
             }
         }
     }
@@ -90,75 +54,6 @@ public class ScreenClipper extends JFrame implements IntellitypeListener, Hotkey
     @Override
     public void onIntellitype(int i) {
 
-    }
-
-    private void addMouseListeners() {
-        addMouseListener(new MouseAdapter() {
-            @Override
-            public void mousePressed(MouseEvent e) {
-                // Create new instance of ScreenshotPanel, that will draw an outline around the area being captured
-                screenshotPanel = new ScreenshotPanel(e.getPoint());
-                screenshotPanel.setSize(getSize()); // Fill screen with screenshotPanel
-                add(screenshotPanel);
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                Rectangle captureRect = screenshotPanel.capture();
-                remove(screenshotPanel);
-                screenshotPanel = null; // Remove reference - garbage collection
-                destroyMouseListeners(); // Remove listeners - no longer needed
-                setVisible(false);
-                captureImage(captureRect, e.getLocationOnScreen());
-            }
-        });
-
-        addMouseMotionListener(new MouseMotionAdapter() {
-            @Override
-            public void mouseDragged(MouseEvent e) {
-                screenshotPanel.update(e);
-            }
-        });
-    }
-
-    private void destroyMouseListeners() {
-        for (MouseListener ml : getMouseListeners()) {
-            removeMouseListener(ml);
-        }
-
-        for (MouseMotionListener mml : getMouseMotionListeners()) {
-            removeMouseMotionListener(mml);
-        }
-    }
-
-    private void adjustRect(Rectangle r, Point mouseEnd) {
-        System.out.println(r);
-        System.out.println(mouseEnd);
-        for(GraphicsDevice d : devices) {
-            Rectangle bounds = d.getDefaultConfiguration().getBounds();
-            if (bounds.contains(mouseEnd)) {
-                System.out.println(bounds);
-                double scaleFactor = d.getDisplayMode().getWidth() / (double) d.getDefaultConfiguration().getBounds().width;
-                double multFactor = screenScale / scaleFactor;
-
-                r.x *= multFactor;
-                r.y *= multFactor;
-
-                r.x += (screenBounds.x / scaleFactor);
-                r.y += (screenBounds.y / scaleFactor);
-
-                r.width *= multFactor;
-                r.height *= multFactor;
-            }
-        }
-        System.out.println(r);
-        System.out.println("------------");
-    }
-
-    private void captureImage(Rectangle r, Point mouseEnd) {
-        adjustRect(r, mouseEnd);
-        BufferedImage capture = robot.createScreenCapture(r);
-        saveImage(capture);
     }
 
     private void saveImage(BufferedImage b) {
@@ -171,17 +66,21 @@ public class ScreenClipper extends JFrame implements IntellitypeListener, Hotkey
     }
 
     private void calculateScreenBounds() {
+        screenRects.clear();
+
         // Update on the off-chance the user has updated their graphics devices during running
-        devices = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices();
-        defaultScreenDevice = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-        screenScale = defaultScreenDevice.getDisplayMode().getWidth() / (double) defaultScreenDevice.getDefaultConfiguration().getBounds().width;
+        GraphicsDevice[] devices = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices();
 
-        screenBounds = devices[0].getDefaultConfiguration().getBounds(); // Initially default screen bounds
+        for (int i=0; i<devices.length; i++) {
+            Rectangle bounds = devices[i].getDefaultConfiguration().getBounds();
+            screenRects.add(bounds);
 
-        // Add bounds of other screens, so clipper covers all available space
-        for (int i=1; i<devices.length; i++) {
-            Rectangle b = devices[i].getDefaultConfiguration().getBounds();
-            screenBounds.add(b);
+            // Update overlays so that current screen is covered
+            if (overlays.size() > i) {
+                overlays.get(i).updateCoveredMonitor(bounds);
+            } else {
+                overlays.add(new MonitorOverlay(bounds));
+            }
         }
     }
 
