@@ -31,7 +31,6 @@ public class ScreencapController extends JPanel {
         originalRect = new Rectangle(s);
         rect = new Rectangle(originalRect);
         setOpaque(false); // Set opaque - Keep translucent background of JFrame
-        LOG.info("ScreenshotPanel initialised successfully.");
     }
 
     /**

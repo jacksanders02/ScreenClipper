@@ -52,7 +52,7 @@ public class ScreenClipper implements IntellitypeListener, HotkeyListener {
         // next check to make sure JIntellitype DLL can be found and we are on
         // a Windows operating System
         if (!JIntellitype.isJIntellitypeSupported()) {
-            LOG.error("Non-Windows operating system, or a problem with the JIntellitype library!");
+            LOG.fatal("Non-Windows operating system, or a problem with the JIntellitype library!");
             System.exit(1);
         }
 
@@ -103,9 +103,11 @@ public class ScreenClipper implements IntellitypeListener, HotkeyListener {
         }
 
         if (monitorID != -1 && r != null) {
+            LOG.info("Attempting new screen capture at " + r.getLocation() + " with size " + r.getSize());
             Rectangle screen = screenRects.get(monitorID);
             r.translate(screen.x, screen.y);
             saveImage(robot.createScreenCapture(r));
+            LOG.info("Screen capture taken successfully!");
         }
     }
 
@@ -118,7 +120,7 @@ public class ScreenClipper implements IntellitypeListener, HotkeyListener {
         try {
             ImageIO.write(b, "png", outFile);
         } catch (IOException e) {
-            LOG.error(e.getMessage());
+            LOG.fatal(e.getMessage());
         }
     }
 
@@ -164,7 +166,7 @@ public class ScreenClipper implements IntellitypeListener, HotkeyListener {
             LOG.info("JIntellitype initialized");
             registerHotkeys();
         } catch (RuntimeException ex) {
-            LOG.error("Either you are not on Windows, or there is a problem with the JIntellitype library!");
+            LOG.fatal("Either you are not on Windows, or there is a problem with the JIntellitype library!");
         }
     }
 }
