@@ -1,3 +1,5 @@
+package com.jacksanders.screenclipper;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -22,7 +24,7 @@ public class MonitorOverlay extends JFrame {
     /** Indicates whether a screencapture is being drawn or not */
     private boolean screenshot;
 
-    /** Where the MonitorOverlay should call back to when a screencap is complete */
+    /** Where the com.jacksanders.screenclipper.MonitorOverlay should call back to when a screencap is complete */
     private ScreenClipper parent;
 
     /** The {@link ScreencapController} object used to actually draw the screencap area */
@@ -44,6 +46,7 @@ public class MonitorOverlay extends JFrame {
         // Set frame to be undecorated (cannot be moved, no title bar/border), with a translucent background
         setUndecorated(true);
         setBackground(new Color(0, 0, 0, 100));
+        setTitle("ScreenClipper");
 
         parent = p;
         captureID = id;

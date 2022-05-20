@@ -1,3 +1,5 @@
+package com.jacksanders.screenclipper;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -7,6 +9,8 @@ import java.awt.event.MouseEvent;
 
 /**
  * A class used by {@link MonitorOverlay} to control the screen area being captured.
+ * @author Jack Sanders
+ * @version 1.0.0 20/05/2022
  */
 public class ScreencapController extends JPanel {
     /** {@link Logger} object used to generate .log files */
