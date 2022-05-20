@@ -18,8 +18,6 @@ public class MonitorOverlay extends JFrame {
         setUndecorated(true);
         setBackground(new Color(0, 0, 0, 100));
 
-        setVisible(true);
-
         parentFrame = p;
         captureID = id;
 
