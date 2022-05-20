@@ -1,29 +1,22 @@
-import net.sourceforge.tess4j.Tesseract;
-import net.sourceforge.tess4j.TesseractException;
-
 import com.melloware.jintellitype.*;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import javax.imageio.ImageIO;
 
 public class ScreenClipper extends JFrame implements IntellitypeListener, HotkeyListener {
     // Create a logger
     private static final Logger LOG = LogManager.getLogger(ScreenClipper.class);
 
-    // Get default screen, and that screen's scale factor
-    private static final GraphicsDevice DEFAULT_SCREEN = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-    private static final double SCREEN_SCALE = DEFAULT_SCREEN.getDisplayMode().getWidth() / (double) DEFAULT_SCREEN.getDefaultConfiguration().getBounds().width;
-
     // Create a robot, for taking screenshots
     private static Robot robot = null;
-
     // Handle AWTException in robot creation
     static {
         try {
@@ -33,13 +26,23 @@ public class ScreenClipper extends JFrame implements IntellitypeListener, Hotkey
         }
     }
 
+    // Array of graphics devices (monitors)
+    private static GraphicsDevice[] devices = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices();
+
+    // Get default screen, and that screen's scale factor
+    private static GraphicsDevice defaultScreenDevice = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+    private static double screenScale = defaultScreenDevice.getDisplayMode().getWidth() / (double) defaultScreenDevice.getDefaultConfiguration().getBounds().width;
+
     // Instance variables
     private Rectangle screenBounds;
+    private ScreenshotPanel screenshotPanel;
 
     public ScreenClipper() {
         // Set frame to be undecorated (cannot be moved, no title bar/border), with a translucent background
         setUndecorated(true);
         setBackground(new Color(0, 0, 0, 100));
+
+        saveImage(robot.createScreenCapture(new Rectangle(-1920, -645, 1920, 1080)));
     }
 
     public static void main(String[] args) {
@@ -67,14 +70,20 @@ public class ScreenClipper extends JFrame implements IntellitypeListener, Hotkey
     public void onHotKey(int i) {
         // Hotkey handlers
         if (i == 1001) { // ALT+A
-            calculateScreenBounds(); // Update screen bounds
+            if (isVisible()) {
+                // Hide if shown - allow user to 'back out' without screenshotting
+                setVisible(false);
+            } else {
+                calculateScreenBounds(); // Update screen bounds
 
-            // Frame will be opened on main screen, so multiply bounds by main screen scale factor to fill all screens
-            setSize((int)(screenBounds.getSize().width * SCREEN_SCALE), (int)(screenBounds.getHeight() * SCREEN_SCALE));
+                setSize(screenBounds.getSize());
+                // Divide coordinates by scale factor - fixes frame being placed off screen if primary screen is scaled
+                // (e.g. laptops)
+                setLocation((int) (screenBounds.getLocation().x / screenScale), (int) (screenBounds.getLocation().y / screenScale));
+                setVisible(true); // Toggle visibility of overlay
 
-            // Divide coordinates by scale factor - fixes frame being placed off screen
-            setLocation((int)(screenBounds.getLocation().x / SCREEN_SCALE), (int)(screenBounds.getLocation().y / SCREEN_SCALE));
-            setVisible(true);
+                addMouseListeners();
+            }
         }
     }
 
@@ -83,8 +92,90 @@ public class ScreenClipper extends JFrame implements IntellitypeListener, Hotkey
 
     }
 
+    private void addMouseListeners() {
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                // Create new instance of ScreenshotPanel, that will draw an outline around the area being captured
+                screenshotPanel = new ScreenshotPanel(e.getPoint());
+                screenshotPanel.setSize(getSize()); // Fill screen with screenshotPanel
+                add(screenshotPanel);
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                Rectangle captureRect = screenshotPanel.capture();
+                remove(screenshotPanel);
+                screenshotPanel = null; // Remove reference - garbage collection
+                destroyMouseListeners(); // Remove listeners - no longer needed
+                setVisible(false);
+                captureImage(captureRect, e.getLocationOnScreen());
+            }
+        });
+
+        addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                screenshotPanel.update(e);
+            }
+        });
+    }
+
+    private void destroyMouseListeners() {
+        for (MouseListener ml : getMouseListeners()) {
+            removeMouseListener(ml);
+        }
+
+        for (MouseMotionListener mml : getMouseMotionListeners()) {
+            removeMouseMotionListener(mml);
+        }
+    }
+
+    private void adjustRect(Rectangle r, Point mouseEnd) {
+        System.out.println(r);
+        System.out.println(mouseEnd);
+        for(GraphicsDevice d : devices) {
+            Rectangle bounds = d.getDefaultConfiguration().getBounds();
+            if (bounds.contains(mouseEnd)) {
+                System.out.println(bounds);
+                double scaleFactor = d.getDisplayMode().getWidth() / (double) d.getDefaultConfiguration().getBounds().width;
+                double multFactor = screenScale / scaleFactor;
+
+                r.x *= multFactor;
+                r.y *= multFactor;
+
+                r.x += (screenBounds.x / scaleFactor);
+                r.y += (screenBounds.y / scaleFactor);
+
+                r.width *= multFactor;
+                r.height *= multFactor;
+            }
+        }
+        System.out.println(r);
+        System.out.println("------------");
+    }
+
+    private void captureImage(Rectangle r, Point mouseEnd) {
+        adjustRect(r, mouseEnd);
+        BufferedImage capture = robot.createScreenCapture(r);
+        saveImage(capture);
+    }
+
+    private void saveImage(BufferedImage b) {
+        File outFile = new File("temp.png");
+        try {
+            ImageIO.write(b, "png", outFile);
+        } catch (IOException e) {
+            LOG.error(e.getMessage());
+        }
+    }
+
     private void calculateScreenBounds() {
-        GraphicsDevice[] devices = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices();
+        // Update on the off-chance the user has updated their graphics devices during running
+        devices = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices();
+        defaultScreenDevice = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+        screenScale = defaultScreenDevice.getDisplayMode().getWidth() / (double) defaultScreenDevice.getDefaultConfiguration().getBounds().width;
+
         screenBounds = devices[0].getDefaultConfiguration().getBounds(); // Initially default screen bounds
 
         // Add bounds of other screens, so clipper covers all available space
