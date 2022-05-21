@@ -11,6 +11,7 @@ import org.apache.logging.log4j.Logger;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.datatransfer.StringSelection;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -133,11 +134,19 @@ public class ScreenClipper implements IntellitypeListener, HotkeyListener {
     private void readText(BufferedImage captureImage) {
         try {
             String outString = TESS.doOCR(captureImage);
-            System.out.println(outString);
+            sendToClipboard(outString);
             LOG.info("Read text from screen capture successfully.");
         } catch (TesseractException e) {
             LOG.error(e.getMessage());
         }
+    }
+
+    /**
+     * Saves text to the system's clipboard
+     * @param text The text to copy
+     */
+    private void sendToClipboard(String text) {
+        Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(text), null);
     }
 
     /**
