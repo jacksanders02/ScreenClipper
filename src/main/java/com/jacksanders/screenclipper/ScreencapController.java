@@ -52,12 +52,28 @@ public class ScreencapController extends JPanel {
     }
 
     /**
+     * Method that coerces a given value to a range.
+     * @param min The minimum value of the range
+     * @param max The maximum value of the range
+     * @param val The value to coerce
+     * @return min, if val < min. max, if val > max. val, if val is between min and max
+     */
+    private int coerceToRange(int min, int max, int val) {
+        return Math.min(Math.max(min, val), max);
+    }
+
+    /**
      * Updates the rect instance variable to contain both the original point, and the mouse cursor's current point.
      * @param e The {@link MouseEvent} that triggered this update
      */
     public void update(MouseEvent e) {
         rect = new Rectangle(originalRect);
-        rect.add(e.getPoint()); // Update rectangle to include current mouse point
+        Point newPoint = e.getPoint();
+
+        newPoint.x = coerceToRange(0, getWidth() - 1, newPoint.x);
+        newPoint.y = coerceToRange(0, getHeight() - 1, newPoint.y);
+
+        rect.add(newPoint);
         repaint();
     }
 }
