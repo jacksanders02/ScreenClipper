@@ -9,12 +9,9 @@ import net.sourceforge.tess4j.TesseractException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 
 /**
@@ -28,11 +25,19 @@ public class ScreenClipper implements IntellitypeListener, HotkeyListener {
     /** {@link Logger} object used to generate .log files */
     private static final Logger LOG = LogManager.getLogger(ScreenClipper.class);
 
+    /** The {@link SystemTray} object used to control notifications & config */
+    private static final SystemTray SYSTEM_TRAY = SystemTray.getSystemTray();
+
     /** {@link Robot} object used to create screen captures */
     private static Robot robot = null;
 
-    // Handle AWTException in robot creation
+    /** {@link Tesseract1} instance, to perform OCR */
+    private static final ITesseract TESS = new Tesseract1();
+
     static {
+        TESS.setDatapath("src/main/resources/tessdata");
+
+        // Handle AWTException in robot creation
         try {
             robot = new Robot();
         } catch (AWTException e) {
@@ -40,18 +45,8 @@ public class ScreenClipper implements IntellitypeListener, HotkeyListener {
         }
     }
 
-    /** {@link Tesseract1} instance, to perform OCR */
-    private static ITesseract TESS = new Tesseract1();
-
-    static {
-        TESS.setDatapath("src/main/resources/tessdata");
-    }
-
-    /** Stores position and size details of each different screen/monitor */
-    private ArrayList<Rectangle> screenRects = new ArrayList<>();
-
     /** Stores a {@link MonitorOverlay} for each screen */
-    private ArrayList<MonitorOverlay> overlays = new ArrayList<>();
+    private final ArrayList<MonitorOverlay> overlays = new ArrayList<>();
 
     public static void main(String[] args) {
         // first check to see if an instance of this application is already
@@ -104,18 +99,17 @@ public class ScreenClipper implements IntellitypeListener, HotkeyListener {
      */
     public void createNewScreenCapture() {
         Rectangle r = null;
-        int monitorID = -1;
+        Rectangle screen = null;
         for(MonitorOverlay o : overlays) {
             if (o.hasCapture()) {
                 r = o.getCaptureRect();
-                monitorID = o.getCaptureID();
+                screen = o.getScreenArea();
             }
             o.reset(); // Clear monitor overlays
         }
 
-        if (monitorID != -1 && r != null) {
+        if (r != null) {
             LOG.info("Attempting new screen capture at " + r.getLocation() + " with size " + r.getSize());
-            Rectangle screen = screenRects.get(monitorID);
             r.translate(screen.x, screen.y);
             try {
                 BufferedImage capture = robot.createScreenCapture(r);
@@ -154,20 +148,17 @@ public class ScreenClipper implements IntellitypeListener, HotkeyListener {
      * creates an overlay for each screen (or updates the corrosponding one if it already exists).
      */
     private void calculateScreenBounds() {
-        screenRects.clear();
-
         // Update on the off-chance the user has updated their graphics devices during running
         GraphicsDevice[] devices = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices();
 
         for (int i=0; i<devices.length; i++) {
             Rectangle bounds = devices[i].getDefaultConfiguration().getBounds();
-            screenRects.add(bounds);
 
             // Update overlays so that current screen is covered
             if (overlays.size() > i) {
                 overlays.get(i).updateCoveredMonitor(bounds);
             } else {
-                overlays.add(new MonitorOverlay(bounds, this, i));
+                overlays.add(new MonitorOverlay(bounds, this));
             }
         }
     }

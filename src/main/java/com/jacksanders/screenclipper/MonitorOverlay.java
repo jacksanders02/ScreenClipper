@@ -18,20 +18,14 @@ public class MonitorOverlay extends JFrame {
     /** {@link Logger} object used to generate .log files */
     private static final Logger LOG = LogManager.getLogger(MonitorOverlay.class);
 
-    /** Stores position data of the screen this instance is covering */
-    private Rectangle coveredScreen;
-
     /** Indicates whether a screencapture is being drawn or not */
     private boolean screenshot;
 
     /** Where the com.jacksanders.screenclipper.MonitorOverlay should call back to when a screencap is complete */
-    private ScreenClipper parent;
+    private final ScreenClipper parent;
 
     /** The {@link ScreencapController} object used to actually draw the screencap area */
     private ScreencapController screencapController;
-
-    /** The ID of this object, indicating which screen is being covered */
-    private int captureID;
 
 
     /**
@@ -40,7 +34,7 @@ public class MonitorOverlay extends JFrame {
      * @param p The base {@link ScreenClipper} object
      * @param id The ID of the screen being covered
      */
-    public MonitorOverlay(Rectangle m, ScreenClipper p, int id) {
+    public MonitorOverlay(Rectangle m, ScreenClipper p) {
         updateCoveredMonitor(m); // Cover entire designated screen
 
         // Set frame to be undecorated (cannot be moved, no title bar/border), with a translucent background
@@ -49,7 +43,6 @@ public class MonitorOverlay extends JFrame {
         setTitle("ScreenClipper");
 
         parent = p;
-        captureID = id;
 
         addMouseListener(new MouseAdapter() {
             @Override
@@ -79,9 +72,9 @@ public class MonitorOverlay extends JFrame {
     }
 
     /**
-     * @return The ID of a {@link MonitorOverlay}
+     * @return The area of the screen being covered by this overlay
      */
-    public int getCaptureID() { return captureID; }
+    public Rectangle getScreenArea() { return getBounds(); }
 
     /**
      * @return The bounds of the screen capture, from {@link ScreencapController}
@@ -96,19 +89,15 @@ public class MonitorOverlay extends JFrame {
     /**
      * Toggles visibility of the overlay
      */
-    public void toggle() {
-        setVisible(!isVisible());
-    }
-
+    public void toggle() { setVisible(!isVisible()); }
 
     /**
      * Used to update which screen a {@link MonitorOverlay} object is covering
      * @param m The bounds of the new screen to cover
      */
     public void updateCoveredMonitor(Rectangle m) {
-        coveredScreen = m;
-        setLocation(coveredScreen.getLocation());
-        setSize(coveredScreen.getSize());
+        setLocation(m.getLocation());
+        setSize(m.getSize());
     }
 
     /**
