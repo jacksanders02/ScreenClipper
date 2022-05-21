@@ -54,15 +54,17 @@ public class MonitorOverlay extends JFrame {
         addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                screenshot = true;
-                screencapController = new ScreencapController(e.getPoint());
-                screencapController.setSize(getSize());
-                add(screencapController);
+                if (e.getButton() == 1 && !screenshot) {
+                    screenshot = true;
+                    screencapController = new ScreencapController(e.getPoint());
+                    screencapController.setSize(getSize());
+                    add(screencapController);
+                }
             }
 
             @Override
             public void mouseReleased(MouseEvent e) {
-                parent.createNewScreenCapture();
+                if (e.getButton() == 1 && screenshot) { parent.createNewScreenCapture(); }
             }
         });
 
