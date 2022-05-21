@@ -47,9 +47,7 @@ public class ScreencapController extends JPanel {
     /**
      * @return The area captured by this screenshot
      */
-    public Rectangle capture() {
-        return rect;
-    }
+    public Rectangle capture() {  return rect; }
 
     /**
      * Method that coerces a given value to a range.
@@ -58,9 +56,7 @@ public class ScreencapController extends JPanel {
      * @param val The value to coerce
      * @return min, if val < min. max, if val > max. val, if val is between min and max
      */
-    private int coerceToRange(int min, int max, int val) {
-        return Math.min(Math.max(min, val), max);
-    }
+    private int coerceToRange(int min, int max, int val) { return Math.min(Math.max(min, val), max); }
 
     /**
      * Updates the rect instance variable to contain both the original point, and the mouse cursor's current point.
