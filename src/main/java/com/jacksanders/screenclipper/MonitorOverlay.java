@@ -35,6 +35,7 @@ public class MonitorOverlay extends JFrame {
      * @param id The ID of the screen being covered
      */
     public MonitorOverlay(Rectangle m, ScreenClipper p) {
+        setType(Type.UTILITY); // Hide icon from taskbar
         updateCoveredMonitor(m); // Cover entire designated screen
 
         // Set frame to be undecorated (cannot be moved, no title bar/border), with a translucent background
