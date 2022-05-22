@@ -131,9 +131,16 @@ public class ScreenClipper implements IntellitypeListener, HotkeyListener {
     private void readText(BufferedImage captureImage) {
         try {
             String outString = TESS.doOCR(captureImage);
-            sendToClipboard(outString);
-            trayIcon.displayMessage("Text copied to clipboard!", outString, TrayIcon.MessageType.INFO);
-            LOG.info("Read text from screen capture successfully.");
+            // If nothing found in selection
+            if (outString == null || outString.trim().isEmpty()) {
+                trayIcon.displayMessage("No text found", "Unfortunately, no text could be found in your selection",
+                        TrayIcon.MessageType.ERROR);
+                LOG.info("No text found in selection");
+            } else {
+                sendToClipboard(outString);
+                trayIcon.displayMessage("Text copied to clipboard!", outString, TrayIcon.MessageType.INFO);
+                LOG.info("Read text from screen capture successfully.");
+            }
         } catch (TesseractException e) {
             LOG.error(e.getMessage());
         }
