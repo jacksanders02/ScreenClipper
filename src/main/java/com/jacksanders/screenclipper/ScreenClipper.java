@@ -25,8 +25,8 @@ public class ScreenClipper implements IntellitypeListener, HotkeyListener {
     /** {@link Logger} object used to generate .log files */
     private static final Logger LOG = LogManager.getLogger(ScreenClipper.class);
 
-    /** The {@link SystemTray} object used to control notifications & config */
-    private static final SystemTray SYSTEM_TRAY = SystemTray.getSystemTray();
+    /** {@link TrayIcon} object used to control system tray behaviour */
+    private static TrayIcon trayIcon;
 
     /** {@link Robot} object used to create screen captures */
     private static Robot robot = null;
@@ -66,6 +66,9 @@ public class ScreenClipper implements IntellitypeListener, HotkeyListener {
 
         // Initialise JIntellitype
         app.initJIntellitype();
+
+        // Initialise system tray
+        app.initSystemTray();
     }
 
     /**
@@ -129,6 +132,7 @@ public class ScreenClipper implements IntellitypeListener, HotkeyListener {
         try {
             String outString = TESS.doOCR(captureImage);
             sendToClipboard(outString);
+            trayIcon.displayMessage("Text copied to clipboard!", outString, TrayIcon.MessageType.INFO);
             LOG.info("Read text from screen capture successfully.");
         } catch (TesseractException e) {
             LOG.error(e.getMessage());
@@ -183,6 +187,29 @@ public class ScreenClipper implements IntellitypeListener, HotkeyListener {
             registerHotkeys();
         } catch (RuntimeException ex) {
             LOG.fatal("Either you are not on Windows, or there is a problem with the JIntellitype library.");
+        }
+    }
+
+    /**
+     * Initialises {@link SystemTray}-related instance variables, and adds the {@link TrayIcon} to the system tray.
+     */
+    public void initSystemTray() {
+        if (SystemTray.isSupported()) {
+            // Get device's system tray
+            SystemTray systemTray = SystemTray.getSystemTray();
+
+            // Use small (less cluttered) version of system icon to avoid scaling issues
+            Image appIcon = Toolkit.getDefaultToolkit().getImage("src/main/resources/icon_small.png");
+
+            // Manually scale tray icon, to avoid rough scaling from using trayIcon.setImageAutoSize(true)
+            Dimension trayIconSize = systemTray.getTrayIconSize();
+            trayIcon = new TrayIcon(appIcon.getScaledInstance(trayIconSize.width, trayIconSize.height, Image.SCALE_SMOOTH), "ScreenClipper");
+
+            try {
+                systemTray.add(trayIcon);
+            } catch (AWTException e) {
+                LOG.error("Error adding tray icon to system tray: " + e.getMessage());
+            }
         }
     }
 }
