@@ -23,7 +23,9 @@ import java.util.ArrayList;
  */
 public class ScreenClipper implements IntellitypeListener, HotkeyListener {
     /** {@link Logger} object used to generate .log files */
-    private static final Logger LOG = LogManager.getLogger(ScreenClipper.class);
+    protected static final Logger LOG = LogManager.getLogger(ScreenClipper.class);
+
+    public static final String RESOURCE_DIR = "./resources";
 
     /** {@link TrayIcon} object used to control system tray behaviour */
     private static TrayIcon trayIcon;
@@ -32,16 +34,16 @@ public class ScreenClipper implements IntellitypeListener, HotkeyListener {
     private static Robot robot = null;
 
     /** {@link Tesseract1} instance, to perform OCR */
-    private static final ITesseract TESS = new Tesseract1();
+    public static final ITesseract TESS = new Tesseract1();
 
     static {
-        TESS.setDatapath("src/main/resources/tessdata");
+        TESS.setDatapath(RESOURCE_DIR + "/tessdata");
 
         // Handle AWTException in robot creation
         try {
             robot = new Robot();
         } catch (AWTException e) {
-            LOG.error(e.getMessage());
+            LOG.error(e.toString());
         }
     }
 
@@ -142,7 +144,7 @@ public class ScreenClipper implements IntellitypeListener, HotkeyListener {
                 LOG.info("Read text from screen capture successfully.");
             }
         } catch (TesseractException e) {
-            LOG.error(e.getMessage());
+            LOG.error(e.toString());
         }
     }
 
@@ -206,16 +208,17 @@ public class ScreenClipper implements IntellitypeListener, HotkeyListener {
             SystemTray systemTray = SystemTray.getSystemTray();
 
             // Use small (less cluttered) version of system icon to avoid scaling issues
-            Image appIcon = Toolkit.getDefaultToolkit().getImage("src/main/resources/icon_small.png");
+            Image appIcon = Toolkit.getDefaultToolkit().getImage(RESOURCE_DIR + "/icon_small.png");
 
             // Manually scale tray icon, to avoid rough scaling from using trayIcon.setImageAutoSize(true)
             Dimension trayIconSize = systemTray.getTrayIconSize();
             trayIcon = new TrayIcon(appIcon.getScaledInstance(trayIconSize.width, trayIconSize.height, Image.SCALE_SMOOTH), "ScreenClipper");
 
+            trayIcon.setPopupMenu(new ClipperPopup());
             try {
                 systemTray.add(trayIcon);
             } catch (AWTException e) {
-                LOG.error("Error adding tray icon to system tray: " + e.getMessage());
+                LOG.error("Error adding tray icon to system tray: " + e.toString());
             }
         }
     }

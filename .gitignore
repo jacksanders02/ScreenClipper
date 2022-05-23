@@ -1,4 +1,5 @@
 *.traineddata
 logs/*
 target/*
+out/*
 *.psd
