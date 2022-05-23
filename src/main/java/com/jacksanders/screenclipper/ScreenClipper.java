@@ -9,12 +9,14 @@ import net.sourceforge.tess4j.TesseractException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -28,7 +30,7 @@ import java.util.Map;
  */
 public class ScreenClipper implements IntellitypeListener, HotkeyListener {
     /** HashMap with language filenames as keys, and their names as values */
-    protected static final Map<String, String> LANG_MAP = parseMapFromFile(ScreenClipper.RESOURCE_DIR + "/langs.txt");
+    protected static final Map<String, String> LANG_MAP = parseMapFromFile("langs.txt");
     
     /** {@link Logger} object used to generate .log files */
     protected static final Logger LOG = LogManager.getLogger(ScreenClipper.class);
@@ -60,6 +62,17 @@ public class ScreenClipper implements IntellitypeListener, HotkeyListener {
     private final ArrayList<MonitorOverlay> overlays = new ArrayList<>();
 
     public static void main(String[] args) {
+        // Attempt to set look and feel to system native, since swing default look and feel appears extremely outdated.
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (ClassNotFoundException |
+                InstantiationException |
+                IllegalAccessException |
+                UnsupportedLookAndFeelException e) {
+            ScreenClipper.LOG.error("Failed to initialise look and feel of language downloader. " +
+                    "Defaulting to swing default L&F.");
+        }
+
         // first check to see if an instance of this application is already
         // running, use the name of the window title of this JFrame for checking
         if (JIntellitype.checkInstanceAlreadyRunning("ScreenClipper")) {
@@ -84,17 +97,23 @@ public class ScreenClipper implements IntellitypeListener, HotkeyListener {
 
 
     /**
-     * @param path The path from which to construct a map (a file in the form key: value)
+     * @param fileName The name of the file (on the classpath) from which to construct a map (a file in the form key: value)
      * @return A map constructed from the file
      */
-    protected static Map<String, String> parseMapFromFile(String path) {
+    protected static Map<String, String> parseMapFromFile(String fileName) {
         HashMap<String, String> returnMap = new HashMap<>();
-        try {
-            Files.lines(Paths.get(path))
-                    .map(s -> s.split(": ")) // Split string to array
-                    .forEach(line -> returnMap.put(line[0], line[1])); // Add code as key, language name as value
-        } catch (IOException e) {
-            ScreenClipper.LOG.error("Error reading language data: " + e.toString());
+
+        // Get InputStream from file on classpath
+        InputStream is = ScreenClipper.class.getClassLoader().getResourceAsStream(fileName);
+
+        if (is == null) {
+            LOG.error("Error reading language data: Could not find langs.txt on classpath.");
+        } else {
+            // Create an InputStreamReader to get a char stream, wrap with BufferedReader to read char stream to lines
+            BufferedReader lineReader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
+
+            // Split each line to key and value & pack to returnMap
+            lineReader.lines().map(s -> s.split(": ")).forEach(s -> returnMap.put(s[0], s[1]));
         }
         return returnMap;
     }
