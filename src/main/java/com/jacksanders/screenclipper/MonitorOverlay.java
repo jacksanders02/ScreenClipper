@@ -14,7 +14,7 @@ import java.awt.event.*;
  * @author Jack Sanders
  * @version 1.0.0 20/05/2022
  */
-public class MonitorOverlay extends JFrame {
+class MonitorOverlay extends JFrame {
     /** {@link Logger} object used to generate .log files */
     private static final Logger LOG = LogManager.getLogger(MonitorOverlay.class);
 
@@ -32,9 +32,8 @@ public class MonitorOverlay extends JFrame {
      * Constructor for {@link MonitorOverlay}
      * @param m The bounds of the screen being covered
      * @param p The base {@link ScreenClipper} object
-     * @param id The ID of the screen being covered
      */
-    public MonitorOverlay(Rectangle m, ScreenClipper p) {
+    protected MonitorOverlay(Rectangle m, ScreenClipper p) {
         setType(Type.UTILITY); // Hide icon from taskbar
         updateCoveredMonitor(m); // Cover entire designated screen
 
@@ -75,28 +74,28 @@ public class MonitorOverlay extends JFrame {
     /**
      * @return The area of the screen being covered by this overlay
      */
-    public Rectangle getScreenArea() { return getBounds(); }
+    protected Rectangle getScreenArea() { return getBounds(); }
 
     /**
      * @return The bounds of the screen capture, from {@link ScreencapController}
      */
-    public Rectangle getCaptureRect() { return screencapController.capture(); }
+    protected Rectangle getCaptureRect() { return screencapController.capture(); }
 
     /**
      * @return Whether or not a {@link MonitorOverlay} is currently capturing anything
      */
-    public boolean hasCapture() { return screencapController != null; }
+    protected boolean hasCapture() { return screencapController != null; }
 
     /**
      * Toggles visibility of the overlay
      */
-    public void toggle() { setVisible(!isVisible()); }
+    protected void toggle() { setVisible(!isVisible()); }
 
     /**
      * Used to update which screen a {@link MonitorOverlay} object is covering
      * @param m The bounds of the new screen to cover
      */
-    public void updateCoveredMonitor(Rectangle m) {
+    protected void updateCoveredMonitor(Rectangle m) {
         setLocation(m.getLocation());
         setSize(m.getSize());
     }
@@ -104,7 +103,7 @@ public class MonitorOverlay extends JFrame {
     /**
      * Resets instance variables of {@link MonitorOverlay}, hides it, and removes screencapController, if one exists.
      */
-    public void reset() {
+    protected void reset() {
         screenshot = false;
         setVisible(false);
         if (hasCapture()) {

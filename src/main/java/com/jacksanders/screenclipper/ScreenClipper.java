@@ -12,7 +12,12 @@ import org.apache.logging.log4j.Logger;
 import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * The main class, that controls the app. It is responsible for handling hotkeys, calculating monitor coordinates, and
@@ -22,10 +27,13 @@ import java.util.ArrayList;
  * @version 1.0.0 20/05/2022
  */
 public class ScreenClipper implements IntellitypeListener, HotkeyListener {
+    /** HashMap with language filenames as keys, and their names as values */
+    protected static final Map<String, String> LANG_MAP = parseMapFromFile(ScreenClipper.RESOURCE_DIR + "/langs.txt");
+    
     /** {@link Logger} object used to generate .log files */
     protected static final Logger LOG = LogManager.getLogger(ScreenClipper.class);
 
-    public static final String RESOURCE_DIR = "./resources";
+    protected static final String RESOURCE_DIR = "./resources";
 
     /** {@link TrayIcon} object used to control system tray behaviour */
     private static TrayIcon trayIcon;
@@ -34,8 +42,9 @@ public class ScreenClipper implements IntellitypeListener, HotkeyListener {
     private static Robot robot = null;
 
     /** {@link Tesseract1} instance, to perform OCR */
-    public static final ITesseract TESS = new Tesseract1();
+    protected static final ITesseract TESS = new Tesseract1();
 
+    // Static code block to initialise class variables
     static {
         TESS.setDatapath(RESOURCE_DIR + "/tessdata");
 
@@ -73,6 +82,23 @@ public class ScreenClipper implements IntellitypeListener, HotkeyListener {
         app.initSystemTray();
     }
 
+
+    /**
+     * @param path The path from which to construct a map (a file in the form key: value)
+     * @return A map constructed from the file
+     */
+    protected static Map<String, String> parseMapFromFile(String path) {
+        HashMap<String, String> returnMap = new HashMap<>();
+        try {
+            Files.lines(Paths.get(path))
+                    .map(s -> s.split(": ")) // Split string to array
+                    .forEach(line -> returnMap.put(line[0], line[1])); // Add code as key, language name as value
+        } catch (IOException e) {
+            ScreenClipper.LOG.error("Error reading language data: " + e.toString());
+        }
+        return returnMap;
+    }
+
     /**
      * Controls what happens when an Intellitype hotkey is detected.
      * @param i the ID of the hotkey pressed
@@ -102,7 +128,7 @@ public class ScreenClipper implements IntellitypeListener, HotkeyListener {
      * user may move mouse from one monitor to another. This means that the overlay the mouse was released on may not
      * be the one they started drawing on, and thus will not have a valid screencap.
      */
-    public void createNewScreenCapture() {
+    protected void createNewScreenCapture() {
         Rectangle r = null;
         Rectangle screen = null;
         for(MonitorOverlay o : overlays) {
@@ -188,7 +214,7 @@ public class ScreenClipper implements IntellitypeListener, HotkeyListener {
     /**
      * Initialise JIntellitype, to attach its commands and hotkeys to this app.
      */
-    public void initJIntellitype() {
+    protected void initJIntellitype() {
         try {
             JIntellitype.getInstance().addHotKeyListener(this);
             JIntellitype.getInstance().addIntellitypeListener(this);
@@ -202,7 +228,7 @@ public class ScreenClipper implements IntellitypeListener, HotkeyListener {
     /**
      * Initialises {@link SystemTray}-related instance variables, and adds the {@link TrayIcon} to the system tray.
      */
-    public void initSystemTray() {
+    protected void initSystemTray() {
         if (SystemTray.isSupported()) {
             // Get device's system tray
             SystemTray systemTray = SystemTray.getSystemTray();
