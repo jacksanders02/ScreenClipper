@@ -69,4 +69,23 @@ class ClipperPopup extends PopupMenu {
         });
         languageSub.add(addMoreMenuItem);
     }
+
+    /**
+     * Reset the popup menu, and update languages
+     */
+    protected void reset() {
+        removeAll();
+
+        // Language Config
+        updateLanguages();
+
+        // Exit Button
+        MenuItem exit = new MenuItem("Close ScreenClipper");
+        exit.addActionListener(e -> {
+            System.exit(0);
+        });
+
+        add(languageSub);
+        add(exit);
+    }
 }

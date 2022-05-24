@@ -211,6 +211,7 @@ class LanguageDownloader extends JFrame {
                         getDownloadThread(langs).start();
                     } else {
                         setVisible(false);
+                        pop.reset();
                     }
 
                 } catch (IOException x) {
