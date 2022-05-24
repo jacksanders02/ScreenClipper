@@ -9,7 +9,9 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 /**
  * {@link JFrame} extension that handles downloading of .traineddata files
@@ -62,10 +64,8 @@ class LanguageDownloader extends JFrame {
             for (Component c : langSelectPanel.getComponents()) {
                 JCheckBox check = (JCheckBox) c;
                 if (check.isSelected()) {
-                    // Find key with value matching name of given checkbox, and add to list of languages to download
-                    toDL.add(ScreenClipper.LANG_MAP.keySet().stream()
-                                                            .filter(s -> ScreenClipper.LANG_MAP.get(s).equals(check.getText()))
-                                                            .findFirst().orElse(null));
+                    // Add checkbox's name (language key) to download list
+                    toDL.add(check.getName());
                 }
             }
 
@@ -110,11 +110,20 @@ class LanguageDownloader extends JFrame {
         panel.setAlignmentX(Component.CENTER_ALIGNMENT);
         panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
 
-        // Get values (language names) from LANG_MAP as Collection, convert to stream, sort stream, convert back to array
-        for (String l : ScreenClipper.LANG_MAP.values().stream().sorted().toArray(String[]::new)) {
+        // Sort all language keys by their respective values
+        String[] sortedLangs = ScreenClipper.LANG_MAP.keySet().stream()
+                                                            .sorted(new Comparator<String>() {
+                                                                @Override
+                                                                public int compare(String o1, String o2) {
+                                                                    Map<String, String> m = ScreenClipper.LANG_MAP;
+                                                                    return m.get(o1).compareToIgnoreCase(m.get(o2));
+                                                                }
+                                                            }).toArray(String[]::new);
+        for (String l : sortedLangs) {
             if (!langs.contains(l)) {
                 // Fill selection panel with one checkbox per language
-                JCheckBox check = new JCheckBox(l);
+                JCheckBox check = new JCheckBox(ScreenClipper.LANG_MAP.get(l));
+                check.setName(l); // Set name to key, to be grabbed in download action listener
                 check.setBackground(Color.WHITE);
                 panel.add(check);
             }
