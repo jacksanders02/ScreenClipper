@@ -2,7 +2,11 @@ package com.jacksanders.screenclipper;
 
 import java.awt.*;
 import java.io.File;
-import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Class to handle the {@link PopupMenu} that appears when the tray icon is right-clicked.
@@ -36,30 +40,39 @@ class ClipperPopup extends PopupMenu {
     protected void updateLanguages() {
         languageSub = new Menu("Select Language");
 
-        String[] files = new File(ScreenClipper.RESOURCE_DIR + "/tessdata").list();
-        ArrayList<String> langs = new ArrayList<>();
-        for (String file : files != null ? files : new String[0]) {
-            if (file.endsWith(".traineddata")) {
-                String lang = file.replace(".traineddata", "");
-                if (!lang.equals("osd")) { // Ignore osd - this is a special datapack used by tesseract for image orientation
-                    CheckboxMenuItem tempItem = new CheckboxMenuItem(ScreenClipper.LANG_MAP.get(lang));
-                    tempItem.addItemListener(e -> {
-                        ScreenClipper.TESS.setLanguage(lang);
+        String[] f = new File(ScreenClipper.RESOURCE_DIR + "/tessdata").list();
 
-                        // Ensure that all checkboxes other than current one are disabled.
-                        // -1 to remove osd.traineddata.
-                        for (int i=0; i<files.length-1; i++) {
-                            CheckboxMenuItem check = (CheckboxMenuItem) languageSub.getItem(i);
-                            check.setState(false);
-                        }
+        if (f == null) {
+            ScreenClipper.LOG.error("Language data files not found. Please ensure they haven't been deleted");
+            return;
+        }
 
-                        tempItem.setState(true);
-                    });
-                    // Add language name to langs
-                    langs.add(ScreenClipper.LANG_MAP.get(lang));
-                    languageSub.add(tempItem);
+        // Filter to get only language files that aren't osd, and sort these by their language names.
+        List<String> langs = Arrays.stream(f).filter(s -> s.endsWith(".traineddata") && !s.startsWith("osd"))
+                                                .map(s -> s.replace(".traineddata", ""))
+                                                .sorted(new Comparator<String>() {
+                                                    @Override
+                                                    public int compare(String o1, String o2) {
+                                                        Map<String, String> m = ScreenClipper.LANG_MAP;
+                                                        return m.get(o1).compareToIgnoreCase(m.get(o2));
+                                                    }
+                                                })
+                                                .collect(Collectors.toList());
+
+        for (String lang : langs) {
+            CheckboxMenuItem tempItem = new CheckboxMenuItem(ScreenClipper.LANG_MAP.get(lang));
+            tempItem.addItemListener(e -> {
+                ScreenClipper.TESS.setLanguage(lang);
+
+                // Ensure that all checkboxes other than current one are disabled.
+                for (int i=0; i<langs.size(); i++) {
+                    CheckboxMenuItem check = (CheckboxMenuItem) languageSub.getItem(i);
+                    check.setState(false);
                 }
-            }
+
+                tempItem.setState(true);
+            });
+            languageSub.add(tempItem);
         }
 
         LanguageDownloader ld = new LanguageDownloader(langs, this);

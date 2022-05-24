@@ -9,6 +9,7 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * {@link JFrame} extension that handles downloading of .traineddata files
@@ -30,7 +31,7 @@ class LanguageDownloader extends JFrame {
     /**
      * @param langs The languages that are already installed.
      */
-    protected LanguageDownloader(ArrayList<String> langs, ClipperPopup popup) {
+    protected LanguageDownloader(List<String> langs, ClipperPopup popup) {
         pop = popup;
 
         Container contentPane = getContentPane();
@@ -103,7 +104,7 @@ class LanguageDownloader extends JFrame {
      * @param langs Languages that have already been downloaded
      * @return A Jpanel with a checkbox for each undownloaded language
      */
-    private JPanel createCheckBoxes(ArrayList<String> langs) {
+    private JPanel createCheckBoxes(List<String> langs) {
         JPanel panel = new JPanel();
         panel.setBackground(Color.WHITE);
         panel.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -147,7 +148,7 @@ class LanguageDownloader extends JFrame {
      * @param langs The languages to download
      * @return The {@link Thread} created containing the download {@link Runnable}
      */
-    private Thread getDownloadThread(ArrayList<String> langs) {
+    private Thread getDownloadThread(List<String> langs) {
         Runnable download = new Runnable() {
             @Override
             public void run() {
