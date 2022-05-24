@@ -35,6 +35,7 @@ public class ScreenClipper implements IntellitypeListener, HotkeyListener {
     /** {@link Logger} object used to generate .log files */
     protected static final Logger LOG = LogManager.getLogger(ScreenClipper.class);
 
+    /** Directory of non-classpath resources */
     protected static final String RESOURCE_DIR = "./resources";
 
     /** {@link TrayIcon} object used to control system tray behaviour */
@@ -62,6 +63,7 @@ public class ScreenClipper implements IntellitypeListener, HotkeyListener {
     private final ArrayList<MonitorOverlay> overlays = new ArrayList<>();
 
     public static void main(String[] args) {
+
         // Attempt to set look and feel to system native, since swing default look and feel appears extremely outdated.
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
