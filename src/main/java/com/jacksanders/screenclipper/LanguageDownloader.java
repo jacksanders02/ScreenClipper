@@ -17,11 +17,18 @@ class LanguageDownloader extends JFrame {
     /** {@link Logger} object used to generate .log files */
     private static final Logger LOG = LogManager.getLogger(LanguageDownloader.class);
 
+    private JProgressBar overallDownloadProgress;
+    private JProgressBar currentFileDownloadProgress;
+
+    private ClipperPopup pop;
+
 
     /**
      * @param langs The languages that are already installed.
      */
     protected LanguageDownloader(ArrayList<String> langs, ClipperPopup popup) {
+        pop = popup;
+
         Container contentPane = getContentPane();
 
         // Set layout manager
@@ -57,9 +64,24 @@ class LanguageDownloader extends JFrame {
                 }
             }
 
-            getDownloadThread(toDL).start();
+            contentPane.removeAll();
+            contentPane.repaint();
 
-            setVisible(false);
+            // Create generic progress bars
+            overallDownloadProgress = genProgressBar(0, toDL.size() * 100);
+            currentFileDownloadProgress = genProgressBar(0, 100);
+
+            // Set size to only fit download bars + padding
+            setSize(270, 130);
+            setResizable(false);
+
+            add(Box.createVerticalStrut(10));
+            add(overallDownloadProgress);
+            add(Box.createVerticalStrut(10));
+            add(currentFileDownloadProgress);
+            add(Box.createVerticalStrut(10));
+
+            getDownloadThread(toDL).start();
         });
 
         // Add all components + vertical spacing
@@ -96,14 +118,22 @@ class LanguageDownloader extends JFrame {
         return panel;
     }
 
+    private JProgressBar genProgressBar(int min, int max) {
+        JProgressBar bar = new JProgressBar(min, max);
+        bar.setAlignmentX(Component.CENTER_ALIGNMENT);
+        bar.setPreferredSize(new Dimension(250, 50));
+        bar.setStringPainted(true);
+        return bar;
+    }
+
     /*
-     * .traineddata files downloaded by threads created by this method are distributed under the Apache-2.0 License.
+     * .traineddata files downloaded by threads created by this method are distributed by tesseract-ocr under the
+     * Apache-2.0 License.
      * For more information, see Licenses/LICENSE_tesseract_ocr.txt
      */
 
     /**
-     * Takes a list of languages, and starts the download of the first one. When that is done, start the download of the
-     * second one.
+     * Takes a list of languages, and creates a thread that when run, will download all languages in that list in order.
      * @param langs The languages to download
      * @return The {@link Thread} created containing the download {@link Runnable}
      */
@@ -113,6 +143,18 @@ class LanguageDownloader extends JFrame {
             public void run() {
                 // Remove and return first string (language code)
                 String s = langs.remove(0);
+
+                // Scrape data number of files downloaded from download progress
+                int startProgress = overallDownloadProgress.getValue();
+
+                // Add one to negate zero-indexing
+                int fileNum = startProgress / 100 + 1;
+                int maxNum = overallDownloadProgress.getMaximum() / 100;
+
+                overallDownloadProgress.setString("Downloading " + ScreenClipper.LANG_MAP.get(s) +
+                        "... (" + fileNum + "/" + maxNum + ")");
+                currentFileDownloadProgress.setString("0%");
+                currentFileDownloadProgress.setValue(0);
 
                 // Get tesseract download link of traineddata files
                 URL downLink;
@@ -141,7 +183,13 @@ class LanguageDownloader extends JFrame {
                         downloaded += bytesRead;
                         outBuffer.write(buffer, 0, bytesRead);
 
-                        System.out.print((int) (((double) downloaded / (double) fileSize) * 100) +"%\r");
+                        int downloadPercent = (int) (((double) downloaded / (double) fileSize) * 100);
+
+                        // Update download progress
+                        overallDownloadProgress.setValue(startProgress + downloadPercent);
+
+                        currentFileDownloadProgress.setString(downloadPercent + "%");
+                        currentFileDownloadProgress.setValue(downloadPercent);
                     }
 
                     // Close buffers
@@ -151,6 +199,8 @@ class LanguageDownloader extends JFrame {
                     // Start downloading next language
                     if (langs.size() > 0) {
                         getDownloadThread(langs).start();
+                    } else {
+                        setVisible(false);
                     }
 
                 } catch (IOException x) {
