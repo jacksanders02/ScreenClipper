@@ -56,9 +56,8 @@ class LanguageDownloader extends JFrame {
                                                             .findFirst().orElse(null));
                 }
             }
-            for (String s : toDL) {
-                getDownloadThread(s).start();
-            }
+
+            getDownloadThread(toDL).start();
 
             setVisible(false);
         });
@@ -103,14 +102,18 @@ class LanguageDownloader extends JFrame {
      */
 
     /**
-     * Start the download of a given training data file
-     * @param s The language code of the data file to download
+     * Takes a list of languages, and starts the download of the first one. When that is done, start the download of the
+     * second one.
+     * @param langs The languages to download
      * @return The {@link Thread} created containing the download {@link Runnable}
      */
-    private Thread getDownloadThread(String s) {
+    private Thread getDownloadThread(ArrayList<String> langs) {
         Runnable download = new Runnable() {
             @Override
             public void run() {
+                // Remove and return first string (language code)
+                String s = langs.remove(0);
+
                 // Get tesseract download link of traineddata files
                 URL downLink;
                 try {
@@ -144,6 +147,11 @@ class LanguageDownloader extends JFrame {
                     // Close buffers
                     outBuffer.close();
                     inBuffer.close();
+
+                    // Start downloading next language
+                    if (langs.size() > 0) {
+                        getDownloadThread(langs).start();
+                    }
 
                 } catch (IOException x) {
                     LOG.error("Error downloading traineddata files: " + x.toString());
