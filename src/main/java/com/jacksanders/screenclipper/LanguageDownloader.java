@@ -17,9 +17,13 @@ class LanguageDownloader extends JFrame {
     /** {@link Logger} object used to generate .log files */
     private static final Logger LOG = LogManager.getLogger(LanguageDownloader.class);
 
+    /** Handles total download progress (i.e. downloading 1 of 3 files would be 33% */
     private JProgressBar overallDownloadProgress;
+
+    /** Handles progress of current file being downloaded */
     private JProgressBar currentFileDownloadProgress;
 
+    /** The {@link PopupMenu} of the application */
     private ClipperPopup pop;
 
 
@@ -118,6 +122,12 @@ class LanguageDownloader extends JFrame {
         return panel;
     }
 
+    /**
+     * Creates a generic {@link JProgressBar}
+     * @param min The minimum value of the progress bar
+     * @param max The maximum value of the progress bar
+     * @return The progress bar
+     */
     private JProgressBar genProgressBar(int min, int max) {
         JProgressBar bar = new JProgressBar(min, max);
         bar.setAlignmentX(Component.CENTER_ALIGNMENT);
