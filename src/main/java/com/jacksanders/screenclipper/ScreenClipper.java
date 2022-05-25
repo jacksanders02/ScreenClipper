@@ -1,14 +1,42 @@
+/*
+ * Copyright (c) 2022 Jack Sanders
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package com.jacksanders.screenclipper;
 
+// Distributed by Formdev under the Apache 2.0 License. See Legal/LICENSE_flatlaf.txt
 import com.formdev.flatlaf.FlatLightLaf;
+////
+
+// Distributed by Melloware under the Apache 2.0 License. See Legal/LICENSE_jintellitype.txt
 import com.melloware.jintellitype.HotkeyListener;
 import com.melloware.jintellitype.IntellitypeListener;
 import com.melloware.jintellitype.JIntellitype;
+////
+
+// Distributed by nguyenq under the Apache 2.0 License. See Legal/LICENSE_tess4j.txt
 import net.sourceforge.tess4j.Tesseract1;
 import net.sourceforge.tess4j.ITesseract;
 import net.sourceforge.tess4j.TesseractException;
+////
+
+// Distributed by Apache Software Foundation under the Apache 2.0 License. See Legal/LICENSE_logging_log4j2.txt
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+////
 
 import javax.swing.*;
 import java.awt.*;
@@ -32,7 +60,7 @@ import java.util.Map;
 public class ScreenClipper implements IntellitypeListener, HotkeyListener {
     /** HashMap with language filenames as keys, and their names as values */
     protected static final Map<String, String> LANG_MAP = parseMapFromFile("langs.txt");
-    
+
     /** {@link Logger} object used to generate .log files */
     protected static final Logger LOG = LogManager.getLogger(ScreenClipper.class);
 

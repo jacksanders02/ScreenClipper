@@ -1,10 +1,28 @@
+/*
+ * Copyright (c) 2022 Jack Sanders
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package com.jacksanders.screenclipper;
 
+// Distributed by Apache Software Foundation under the Apache 2.0 License. See Legal/LICENSE_logging_log4j2.txt
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+////
 
 import javax.swing.*;
-import javax.swing.text.BoxView;
 import java.awt.*;
 import java.io.*;
 import java.net.MalformedURLException;
@@ -249,7 +267,7 @@ class LanguageManager extends JFrame {
     /*
      * .traineddata files downloaded by threads created by this method are distributed by tesseract-ocr under the
      * Apache-2.0 License.
-     * For more information, see Licenses/LICENSE_tesseract_ocr.txt
+     * For more information, see Legal/LICENSE_tesseract_ocr.txt
      */
 
     /**

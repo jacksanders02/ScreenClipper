@@ -1,7 +1,21 @@
-package com.jacksanders.screenclipper;
+/*
+ * Copyright (c) 2022 Jack Sanders
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+package com.jacksanders.screenclipper;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,9 +29,6 @@ import java.awt.event.*;
  * @version 1.0.0 20/05/2022
  */
 class MonitorOverlay extends JFrame {
-    /** {@link Logger} object used to generate .log files */
-    private static final Logger LOG = LogManager.getLogger(MonitorOverlay.class);
-
     /** Indicates whether a screencapture is being drawn or not */
     private boolean screenshot;
 

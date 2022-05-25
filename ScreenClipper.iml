@@ -28,8 +28,6 @@
     <orderEntry type="library" name="Maven: com.melloware:jintellitype:1.4.0" level="project" />
     <orderEntry type="library" name="Maven: org.apache.logging.log4j:log4j-api:2.17.2" level="project" />
     <orderEntry type="library" name="Maven: org.apache.logging.log4j:log4j-core:2.17.2" level="project" />
-    <orderEntry type="library" scope="TEST" name="Maven: ch.qos.logback:logback-classic:1.2.11" level="project" />
-    <orderEntry type="library" scope="TEST" name="Maven: ch.qos.logback:logback-core:1.2.11" level="project" />
     <orderEntry type="library" name="Maven: org.slf4j:slf4j-api:1.7.36" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Maven: org.slf4j:slf4j-reload4j:1.7.36" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Maven: ch.qos.reload4j:reload4j:1.2.19" level="project" />
