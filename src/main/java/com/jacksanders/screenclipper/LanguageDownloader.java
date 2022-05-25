@@ -4,6 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.swing.*;
+import javax.swing.text.BoxView;
 import java.awt.*;
 import java.io.*;
 import java.net.MalformedURLException;
@@ -16,9 +17,9 @@ import java.util.Map;
 /**
  * {@link JFrame} extension that handles downloading of .traineddata files
  */
-class LanguageDownloader extends JFrame {
+class LanguageManager extends JFrame {
     /** {@link Logger} object used to generate .log files */
-    private static final Logger LOG = LogManager.getLogger(LanguageDownloader.class);
+    private static final Logger LOG = LogManager.getLogger(LanguageManager.class);
 
     /** Handles total download progress (i.e. downloading 1 of 3 files would be 33% */
     private JProgressBar overallDownloadProgress;
@@ -33,40 +34,51 @@ class LanguageDownloader extends JFrame {
     /**
      * @param langs The languages that are already installed.
      */
-    protected LanguageDownloader(List<String> langs, ClipperPopup popup) {
+    protected LanguageManager(List<String> langs, ClipperPopup popup) {
         pop = popup;
 
         Container contentPane = getContentPane();
 
-        // Set layout manager
-        contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.PAGE_AXIS));
+        // Set layout manager and constraints
+        contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.LINE_AXIS));
 
         // Frame config
-        setTitle("Language downloader for ScreenClipper");
+        setTitle("Language Manager for ScreenClipper");
         setIconImage(Toolkit.getDefaultToolkit().getImage(ScreenClipper.RESOURCE_DIR + "/icon.png"));
         setBackground(new Color(243, 243, 243));
 
-        setSize(300, 450);
-        setMaximumSize(new Dimension(300, 450));
+        setSize(600, 450);
+        setMaximumSize(new Dimension(600, 450));
 
-        // Initialise language selection panel
-        JPanel langSelectPanel = createCheckBoxes(langs);
+        // Initialise language selection panels
+        JPanel langDownloadSelectPanel = createCheckBoxes(langs, false);
+        JPanel langDeleteSelectPanel = createCheckBoxes(langs, true);
 
         // Pack language selection panel into scroll pane, as list is long and scrolling will be needed
-        JScrollPane scroll = new JScrollPane(langSelectPanel);
-        scroll.setSize(250, 400);
-        scroll.setMaximumSize(new Dimension(250, 400));
+        JScrollPane addScroll = new JScrollPane(langDownloadSelectPanel);
+        addScroll.setSize(250, 400);
+        addScroll.setMaximumSize(new Dimension(250, 400));
 
+        // Create scroll pane for deleting languages
+        JScrollPane deleteScroll = new JScrollPane(langDeleteSelectPanel);
+        deleteScroll.setSize(250, 400);
+        deleteScroll.setMaximumSize(new Dimension(250, 400));
+
+        // Setup download button and add action listener
         JButton dlButton = new JButton("Install Selected Languages");
         dlButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         dlButton.addActionListener(e -> {
             ArrayList<String> toDL = new ArrayList<>();
-            for (Component c : langSelectPanel.getComponents()) {
+            for (Component c : langDownloadSelectPanel.getComponents()) {
                 JCheckBox check = (JCheckBox) c;
                 if (check.isSelected()) {
                     // Add checkbox's name (language key) to download list
                     toDL.add(check.getName());
                 }
+            }
+
+            if (toDL.size() == 0) {
+                return; // No point trying to download 0 languages
             }
 
             contentPane.removeAll();
@@ -75,6 +87,9 @@ class LanguageDownloader extends JFrame {
             // Create generic progress bars
             overallDownloadProgress = genProgressBar(0, toDL.size() * 100);
             currentFileDownloadProgress = genProgressBar(0, 100);
+
+            // Change axis of layoutm, to stack progress bars atop one another
+            contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.PAGE_AXIS));
 
             // Set size to only fit download bars + padding
             setSize(270, 130);
@@ -89,12 +104,42 @@ class LanguageDownloader extends JFrame {
             getDownloadThread(toDL).start();
         });
 
+        JButton deleteButton = new JButton("Remove Selected Languages");
+        deleteButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        deleteButton.addActionListener(e -> {
+            for (Component c : langDeleteSelectPanel.getComponents()) {
+                JCheckBox check = (JCheckBox) c;
+                if (check.isSelected()) {
+                    deleteLang(c.getName());
+                }
+            }
+            setVisible(false);
+            pop.reset();
+        });
+
+        // Create dummy panels to hold each side
         // Add all components + vertical spacing
-        add(Box.createVerticalStrut(10));
-        add(scroll);
-        add(Box.createVerticalStrut(10));
-        add(dlButton);
-        add(Box.createVerticalStrut(10));
+        JPanel left = new JPanel();
+        left.setLayout(new BoxLayout(left, BoxLayout.PAGE_AXIS));
+
+        left.add(Box.createVerticalStrut(10));
+        left.add(addScroll);
+        left.add(Box.createVerticalStrut(10));
+        left.add(dlButton);
+        left.add(Box.createVerticalStrut(10));
+
+        JPanel right = new JPanel();
+        right.setLayout(new BoxLayout(right, BoxLayout.PAGE_AXIS));
+
+        right.add(Box.createVerticalStrut(10));
+        right.add(deleteScroll);
+        right.add(Box.createVerticalStrut(10));
+        right.add(deleteButton);
+        right.add(Box.createVerticalStrut(10));
+
+        add(left);
+        add(Box.createHorizontalStrut(25));
+        add(right);
 
         setVisible(false);
     }
@@ -104,7 +149,7 @@ class LanguageDownloader extends JFrame {
      * @param langs Languages that have already been downloaded
      * @return A Jpanel with a checkbox for each undownloaded language
      */
-    private JPanel createCheckBoxes(List<String> langs) {
+    private JPanel createCheckBoxes(List<String> langs, boolean addIfIn) {
         JPanel panel = new JPanel();
         panel.setBackground(Color.WHITE);
         panel.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -120,7 +165,7 @@ class LanguageDownloader extends JFrame {
                                                                 }
                                                             }).toArray(String[]::new);
         for (String l : sortedLangs) {
-            if (!langs.contains(l)) {
+            if ((langs.contains(l) && addIfIn) || (!langs.contains(l) && !addIfIn)) {
                 // Fill selection panel with one checkbox per language
                 JCheckBox check = new JCheckBox(ScreenClipper.LANG_MAP.get(l));
                 check.setName(l); // Set name to key, to be grabbed in download action listener
@@ -216,6 +261,8 @@ class LanguageDownloader extends JFrame {
                     outBuffer.close();
                     inBuffer.close();
 
+                    LOG.info("Successfully downloaded file " + s + ".traineddata");
+
                     // Start downloading next language
                     if (langs.size() > 0) {
                         getDownloadThread(langs).start();
@@ -233,4 +280,17 @@ class LanguageDownloader extends JFrame {
         return new Thread(download);
     }
 
+    /**
+     * Deletes a given language from tessdata directory
+     * @param lang The language code to delete
+     */
+    private void deleteLang(String lang) {
+        File langFile = new File(ScreenClipper.RESOURCE_DIR + "/tessdata/" + lang + ".traineddata");
+
+        if (langFile.delete()) {
+            LOG.info("Deleted file " + langFile);
+        } else {
+            LOG.error("Failed to delete file " + langFile);
+        }
+    }
 }

@@ -75,7 +75,7 @@ class ClipperPopup extends PopupMenu {
             languageSub.add(tempItem);
         }
 
-        LanguageDownloader ld = new LanguageDownloader(langs, this);
+        LanguageManager ld = new LanguageManager(langs, this);
         MenuItem addMoreMenuItem = new MenuItem("Add More...");
         addMoreMenuItem.addActionListener(e -> {
             ld.setVisible(true);
