@@ -12,42 +12,28 @@ import java.util.stream.Collectors;
  * Class to handle the {@link PopupMenu} that appears when the tray icon is right-clicked.
  */
 class ClipperPopup extends PopupMenu {
-
-    /** Language selection submenu */
-    Menu languageSub;
-
     /** Language management frame */
     LanguageManager lm;
-
 
     /**
      * Construct a basic popup menu
      */
     protected ClipperPopup() {
-        // Language Config
-        updateLanguages();
-
-        // Exit Button
-        MenuItem exit = new MenuItem("Close ScreenClipper");
-        exit.addActionListener(e -> {
-            System.exit(0);
-        });
-
-        add(languageSub);
-        add(exit);
+        reset();
     }
 
     /**
-     * Get details of currently installed languages, and add to set language submenu.
+     * Get details of currently installed languages, and constructs a language selection submenu.
+     * @return The language selection submenu
      */
-    protected void updateLanguages() {
-        languageSub = new Menu("Select Language");
+    protected Menu updateLanguages() {
+        Menu languageSub = new Menu("Select Language");
 
         String[] f = new File(ScreenClipper.RESOURCE_DIR + "/tessdata").list();
 
         if (f == null) {
             ScreenClipper.LOG.error("Language data files not found. Please ensure they haven't been deleted");
-            return;
+            return null;
         }
 
         // Filter to get only language files that aren't osd, and sort these by their language names.
@@ -84,11 +70,7 @@ class ClipperPopup extends PopupMenu {
             lm.updateLangs(langs);
         }
 
-        MenuItem addMoreMenuItem = new MenuItem("Add More...");
-        addMoreMenuItem.addActionListener(e -> {
-            lm.setVisible(true);
-        });
-        languageSub.add(addMoreMenuItem);
+        return languageSub;
     }
 
     /**
@@ -98,7 +80,13 @@ class ClipperPopup extends PopupMenu {
         removeAll();
 
         // Language Config
-        updateLanguages();
+        Menu languageSub = updateLanguages();
+
+        // Manage Languages
+        MenuItem addMoreMenuItem = new MenuItem("Manage Installed Languages");
+        addMoreMenuItem.addActionListener(e -> {
+            lm.setVisible(true);
+        });
 
         // Exit Button
         MenuItem exit = new MenuItem("Close ScreenClipper");
@@ -107,6 +95,7 @@ class ClipperPopup extends PopupMenu {
         });
 
         add(languageSub);
+        add(addMoreMenuItem);
         add(exit);
     }
 }
