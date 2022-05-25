@@ -1,5 +1,6 @@
 package com.jacksanders.screenclipper;
 
+import com.formdev.flatlaf.FlatLightLaf;
 import com.melloware.jintellitype.HotkeyListener;
 import com.melloware.jintellitype.IntellitypeListener;
 import com.melloware.jintellitype.JIntellitype;
@@ -64,15 +65,19 @@ public class ScreenClipper implements IntellitypeListener, HotkeyListener {
 
     public static void main(String[] args) {
 
-        // Attempt to set look and feel to system native, since swing default look and feel appears extremely outdated.
+        // Initialise look and feel. Start with Flat LAF, then try system default, then try swing default.
         try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (ClassNotFoundException |
-                InstantiationException |
-                IllegalAccessException |
-                UnsupportedLookAndFeelException e) {
-            ScreenClipper.LOG.error("Failed to initialise look and feel of language downloader. " +
-                    "Defaulting to swing default L&F.");
+            UIManager.setLookAndFeel(new FlatLightLaf());
+        } catch( Exception ex ) {
+            LOG.error("Failed to initialise L&F. Reverting to system default");
+            try {
+                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            } catch (ClassNotFoundException |
+                     InstantiationException |
+                     IllegalAccessException |
+                     UnsupportedLookAndFeelException e) {
+                LOG.error("Failed to get system default L&F. Reverting to Swing default");
+            }
         }
 
         // first check to see if an instance of this application is already
