@@ -50,6 +50,17 @@ class LanguageManager extends JFrame {
         setSize(600, 450);
         setMaximumSize(new Dimension(600, 450));
 
+        initComponents(langs, contentPane);
+
+        setVisible(false);
+    }
+
+    /**
+     * Initialise language manager components
+     * @param langs The languages that are installed
+     * @param cPane This frame's {@link Container}
+     */
+    private void initComponents(List<String> langs, Container cPane) {
         // Initialise language selection panels
         JPanel langDownloadSelectPanel = createCheckBoxes(langs, false);
         JPanel langDeleteSelectPanel = createCheckBoxes(langs, true);
@@ -57,12 +68,10 @@ class LanguageManager extends JFrame {
         // Pack language selection panel into scroll pane, as list is long and scrolling will be needed
         JScrollPane addScroll = new JScrollPane(langDownloadSelectPanel);
         addScroll.setSize(250, 400);
-        addScroll.setMaximumSize(new Dimension(250, 400));
 
         // Create scroll pane for deleting languages
         JScrollPane deleteScroll = new JScrollPane(langDeleteSelectPanel);
         deleteScroll.setSize(250, 400);
-        deleteScroll.setMaximumSize(new Dimension(250, 400));
 
         // Setup download button and add action listener
         JButton dlButton = new JButton("Install Selected Languages");
@@ -81,26 +90,37 @@ class LanguageManager extends JFrame {
                 return; // No point trying to download 0 languages
             }
 
-            contentPane.removeAll();
-            contentPane.repaint();
+            // Show progress bars in separate JFrame
+            JFrame progFrame = new JFrame("Downloading Language Data...");
 
             // Create generic progress bars
             overallDownloadProgress = genProgressBar(0, toDL.size() * 100);
             currentFileDownloadProgress = genProgressBar(0, 100);
 
             // Change axis of layoutm, to stack progress bars atop one another
-            contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.PAGE_AXIS));
+            progFrame.setLayout(new BoxLayout(progFrame.getContentPane(), BoxLayout.PAGE_AXIS));
 
             // Set size to only fit download bars + padding
-            setSize(270, 130);
-            setResizable(false);
+            progFrame.setSize(270, 130);
 
-            add(Box.createVerticalStrut(10));
-            add(overallDownloadProgress);
-            add(Box.createVerticalStrut(10));
-            add(currentFileDownloadProgress);
-            add(Box.createVerticalStrut(10));
+            progFrame.add(Box.createVerticalStrut(10));
+            progFrame.add(overallDownloadProgress);
+            progFrame.add(Box.createVerticalStrut(10));
+            progFrame.add(currentFileDownloadProgress);
+            progFrame.add(Box.createVerticalStrut(10));
 
+            int x = getX();
+            int y = getY();
+
+            int halfWidth = getWidth() / 2;
+            int halfHeight = getHeight() / 2;
+
+            // Show progress bar JFrame in middle of this one
+            progFrame.setLocation(x + halfWidth - progFrame.getWidth() / 2, y + halfHeight - progFrame.getHeight() / 2);
+
+            progFrame.setVisible(true);
+
+            // Start first download thread
             getDownloadThread(toDL).start();
         });
 
@@ -113,7 +133,6 @@ class LanguageManager extends JFrame {
                     deleteLang(c.getName());
                 }
             }
-            setVisible(false);
             pop.reset();
         });
 
@@ -141,11 +160,11 @@ class LanguageManager extends JFrame {
         right.add(deleteButton);
         right.add(Box.createVerticalStrut(10));
 
+        add(Box.createHorizontalStrut(10));
         add(left);
         add(Box.createHorizontalStrut(25));
         add(right);
-
-        setVisible(false);
+        add(Box.createHorizontalStrut(10));
     }
 
     /**
@@ -205,6 +224,26 @@ class LanguageManager extends JFrame {
         bar.setPreferredSize(new Dimension(250, 50));
         bar.setStringPainted(true);
         return bar;
+    }
+
+    /**
+     * Accessible method used by {@link ClipperPopup} to update languages displayed in selection panes
+     * @param langs Languages currently installed by the program
+     */
+    protected void updateLangs(List<String> langs) {
+        // Set size back to default
+        setSize(600, 450);
+        setMaximumSize(new Dimension(600, 450));
+
+        // Clear content pane
+        Container pane = getContentPane();
+        pane.removeAll();
+        pane.repaint();
+
+        initComponents(langs, pane);
+
+        revalidate();
+        repaint();
     }
 
     /*
@@ -283,7 +322,8 @@ class LanguageManager extends JFrame {
                     if (langs.size() > 0) {
                         getDownloadThread(langs).start();
                     } else {
-                        setVisible(false);
+                        overallDownloadProgress.setString("Done!");
+                        currentFileDownloadProgress.setString("Done!");
                         pop.reset();
                     }
 

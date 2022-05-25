@@ -16,6 +16,9 @@ class ClipperPopup extends PopupMenu {
     /** Language selection submenu */
     Menu languageSub;
 
+    /** Language management frame */
+    LanguageManager lm;
+
 
     /**
      * Construct a basic popup menu
@@ -75,10 +78,15 @@ class ClipperPopup extends PopupMenu {
             languageSub.add(tempItem);
         }
 
-        LanguageManager ld = new LanguageManager(langs, this);
+        if (lm == null) {
+            lm = new LanguageManager(langs, this);
+        } else {
+            lm.updateLangs(langs);
+        }
+
         MenuItem addMoreMenuItem = new MenuItem("Add More...");
         addMoreMenuItem.addActionListener(e -> {
-            ld.setVisible(true);
+            lm.setVisible(true);
         });
         languageSub.add(addMoreMenuItem);
     }
