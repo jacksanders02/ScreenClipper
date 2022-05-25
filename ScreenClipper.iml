@@ -33,5 +33,6 @@
     <orderEntry type="library" name="Maven: org.slf4j:slf4j-api:1.7.36" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Maven: org.slf4j:slf4j-reload4j:1.7.36" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Maven: ch.qos.reload4j:reload4j:1.2.19" level="project" />
+    <orderEntry type="library" name="Maven: com.formdev:flatlaf:2.2" level="project" />
   </component>
 </module>

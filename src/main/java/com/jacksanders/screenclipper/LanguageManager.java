@@ -123,6 +123,8 @@ class LanguageManager extends JFrame {
         left.setLayout(new BoxLayout(left, BoxLayout.PAGE_AXIS));
 
         left.add(Box.createVerticalStrut(10));
+        left.add(titleBar("Add Language(s)"));
+        left.add(Box.createVerticalStrut(10));
         left.add(addScroll);
         left.add(Box.createVerticalStrut(10));
         left.add(dlButton);
@@ -131,6 +133,8 @@ class LanguageManager extends JFrame {
         JPanel right = new JPanel();
         right.setLayout(new BoxLayout(right, BoxLayout.PAGE_AXIS));
 
+        right.add(Box.createVerticalStrut(10));
+        right.add(titleBar("Delete Language(s)"));
         right.add(Box.createVerticalStrut(10));
         right.add(deleteScroll);
         right.add(Box.createVerticalStrut(10));
@@ -142,6 +146,18 @@ class LanguageManager extends JFrame {
         add(right);
 
         setVisible(false);
+    }
+
+    /**
+     * @param text The text to put on the title bar
+     * @return The title bar containing the text, in semibold font (FlatLaf)
+     */
+    private JLabel titleBar(String text) {
+        JLabel bar = new JLabel(text);
+        bar.putClientProperty("FlatLaf.style", "font: 200% $semibold.font");
+        bar.setFont(new Font(bar.getFont().getName(), Font.BOLD, 18));
+        bar.setAlignmentX(Component.CENTER_ALIGNMENT);
+        return bar;
     }
 
     /**
