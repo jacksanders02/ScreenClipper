@@ -57,9 +57,9 @@ class ClipperPopup extends PopupMenu {
             return null;
         }
 
-        // Filter to get only language files that aren't osd, and sort these by their language names.
-        List<String> langs = Arrays.stream(f).filter(s -> s.endsWith(".traineddata") && !s.startsWith("osd"))
-                                                .map(s -> s.replace(".traineddata", ""))
+        // Filter to get only valid language files, and sort these by their language names.
+        List<String> langs = Arrays.stream(f).map(s -> s.replace(".traineddata", "")) // Remove file extension
+                                                .filter(ScreenClipper.LANG_MAP::containsKey) // Filters only valid languages
                                                 .sorted(new Comparator<String>() {
                                                     @Override
                                                     public int compare(String o1, String o2) {
