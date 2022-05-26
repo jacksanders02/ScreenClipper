@@ -84,6 +84,7 @@ public class ScreenClipper implements IntellitypeListener, HotkeyListener {
     // Static code block to initialise class variables
     static {
         TESS.setDatapath(RESOURCE_DIR + "/tessdata");
+        TESS.setOcrEngineMode(1); // Neural Net LSTM engine
         // Handle AWTException in robot creation
         try {
             robot = new Robot();
