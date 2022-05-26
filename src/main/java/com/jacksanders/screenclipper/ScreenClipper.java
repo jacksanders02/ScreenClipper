@@ -49,6 +49,7 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -215,8 +216,8 @@ public class ScreenClipper implements IntellitypeListener, HotkeyListener {
         }
 
         if (r != null) {
-            LOG.info("Attempting new screen capture at " + r.getLocation() + " with size " + r.getSize());
             r.translate(screen.x, screen.y);
+            LOG.info("Attempting new screen capture at " + r.getLocation() + " with size " + r.getSize());
             try {
                 File screenCap = new File("read_from.png");
                 ImageIO.write(robot.createScreenCapture(r), "png", screenCap);
@@ -225,7 +226,7 @@ public class ScreenClipper implements IntellitypeListener, HotkeyListener {
             } catch (IllegalArgumentException e) {
                 LOG.error("Cannot create a capture with no area.");
             } catch (IOException e) {
-                LOG.error("Failed to save screen capture.");
+                LOG.error("Failed to save screen capture: " + e.toString());
             }
         }
     }
@@ -282,18 +283,24 @@ public class ScreenClipper implements IntellitypeListener, HotkeyListener {
      */
     private void readText(File readFile) {
         try {
-            String outString = TESS.doOCR(readFile);
-            readFile.delete();
-            // If nothing found in selection
-            if (outString == null || outString.trim().isEmpty()) {
-                trayIcon.displayMessage("No text found", "Unfortunately, no text could be found in your selection",
-                        TrayIcon.MessageType.ERROR);
-                LOG.info("No text found in selection");
+            if (new File(RESOURCE_DIR + "/tessdata/" + currentLang + ".traineddata").exists()) {
+                String outString = TESS.doOCR(readFile);
+                // If nothing found in selection
+                if (outString == null || outString.trim().isEmpty()) {
+                    trayIcon.displayMessage("No text found", "Unfortunately, no text could be found in your selection",
+                            TrayIcon.MessageType.ERROR);
+                    LOG.info("No text found in selection");
+                } else {
+                    sendToClipboard(outString);
+                    trayIcon.displayMessage("Text copied to clipboard!", outString, TrayIcon.MessageType.INFO);
+                    LOG.info("Read text from screen capture successfully.");
+                }
             } else {
-                sendToClipboard(outString);
-                trayIcon.displayMessage("Text copied to clipboard!", outString, TrayIcon.MessageType.INFO);
-                LOG.info("Read text from screen capture successfully.");
+                trayIcon.displayMessage("Language file for not found!", "Try reinstalling data for " +
+                                        LANG_MAP.get(currentLang) + " through the language manager.",
+                                        TrayIcon.MessageType.ERROR);
             }
+            //readFile.delete();
         } catch (TesseractException e) {
             LOG.error(e.toString());
         }

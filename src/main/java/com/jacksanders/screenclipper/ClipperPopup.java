@@ -69,6 +69,10 @@ class ClipperPopup extends PopupMenu {
                                                 })
                                                 .collect(Collectors.toList());
 
+        if (langs.size() == 0) {
+            languageSub.add(new MenuItem("No Languages Found!"));
+        }
+
         for (String lang : langs) {
             CheckboxMenuItem tempItem = new CheckboxMenuItem(ScreenClipper.LANG_MAP.get(lang));
             if (app.getLang().equals(lang)) {
@@ -107,7 +111,7 @@ class ClipperPopup extends PopupMenu {
         Menu languageSub = updateLanguages();
 
         // Manage Languages
-        MenuItem addMoreMenuItem = new MenuItem("Manage Installed Languages");
+        MenuItem addMoreMenuItem = new MenuItem("Install/Remove Languages");
         addMoreMenuItem.addActionListener(e -> {
             lm.setVisible(true);
         });
