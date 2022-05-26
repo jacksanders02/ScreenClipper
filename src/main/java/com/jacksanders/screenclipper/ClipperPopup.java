@@ -116,6 +116,11 @@ class ClipperPopup extends PopupMenu {
             lm.setVisible(true);
         });
 
+        MenuItem takeScreenshot = new MenuItem("Take Clipping");
+        takeScreenshot.addActionListener(e -> {
+            app.onHotKey(1001); // Spoof a hotkey press
+        });
+
         // Exit Button
         MenuItem exit = new MenuItem("Close ScreenClipper");
         exit.addActionListener(e -> {
@@ -124,6 +129,7 @@ class ClipperPopup extends PopupMenu {
 
         add(languageSub);
         add(addMoreMenuItem);
+        add(takeScreenshot);
         add(exit);
     }
 }
