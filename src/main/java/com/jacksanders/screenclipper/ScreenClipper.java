@@ -300,7 +300,7 @@ public class ScreenClipper implements IntellitypeListener, HotkeyListener {
                                         "Try reinstalling it through the language manager, or select a different language",
                                         TrayIcon.MessageType.ERROR);
             }
-            //readFile.delete();
+            readFile.delete();
         } catch (TesseractException e) {
             LOG.error(e.toString());
         }
