@@ -28,6 +28,8 @@ import com.melloware.jintellitype.JIntellitype;
 ////
 
 // Distributed by nguyenq under the Apache 2.0 License. See Legal/LICENSE_tess4j.txt
+import com.recognition.software.jdeskew.ImageDeskew;
+import net.sourceforge.tess4j.util.ImageHelper;
 import net.sourceforge.tess4j.Tesseract1;
 import net.sourceforge.tess4j.ITesseract;
 import net.sourceforge.tess4j.TesseractException;
@@ -38,13 +40,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 ////
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -79,7 +80,6 @@ public class ScreenClipper implements IntellitypeListener, HotkeyListener {
     // Static code block to initialise class variables
     static {
         TESS.setDatapath(RESOURCE_DIR + "/tessdata");
-
         // Handle AWTException in robot creation
         try {
             robot = new Robot();
@@ -197,22 +197,72 @@ public class ScreenClipper implements IntellitypeListener, HotkeyListener {
             LOG.info("Attempting new screen capture at " + r.getLocation() + " with size " + r.getSize());
             r.translate(screen.x, screen.y);
             try {
-                BufferedImage capture = robot.createScreenCapture(r);
+                File screenCap = new File("read_from.png");
+                ImageIO.write(robot.createScreenCapture(r), "png", screenCap);
                 LOG.info("Screen capture taken successfully.");
-                readText(capture);
+                readText(processForOCR(screenCap));
             } catch (IllegalArgumentException e) {
                 LOG.error("Cannot create a capture with no area.");
+            } catch (IOException e) {
+                LOG.error("Failed to save screen capture.");
             }
         }
     }
 
     /**
-     * Utilises Tesseract OCR to read text from an image, and output it.
-     * @param captureImage The {@link BufferedImage} from which text will be read.
+     * Performs some simple image processing before OCR is carried out (deskew, greyscale)
+     * @param toProcess The image file to process
+     * @return The processed image file
      */
-    private void readText(BufferedImage captureImage) {
+    private File processForOCR(File toProcess) {
         try {
-            String outString = TESS.doOCR(captureImage);
+            BufferedImage img = ImageIO.read(toProcess);
+
+            // Greyscaleify image
+            int height = img.getHeight();
+            int width = img.getWidth();
+
+            for (int y=0; y<height; y++) {
+                for (int x=0; x<width; x++) {
+                    int col = img.getRGB(x, y);
+
+                    // Mask and right-shift
+                    int b = col & 0xff;
+                    int g = (col & 0xff00) >> 8;
+                    int r = (col & 0xff0000) >> 16;
+
+                    // Calculate which grey to use
+                    int grey = (int)(0.299 * r + 0.587 * g + 0.114 * b);
+
+                    // Left shift and OR together
+                    int newCol = (grey << 16) | (grey <<8) | grey;
+
+                    img.setRGB(x, y, newCol);
+                }
+            }
+
+            // Get skew angle
+            double skew = new ImageDeskew(img).getSkewAngle();
+
+            // Rotate by skew angle
+            img = ImageHelper.rotateImage(img, -skew);
+
+            ImageIO.write(img, "png", toProcess);
+        } catch (IOException e) {
+            LOG.error(e.toString());
+        }
+
+        return toProcess;
+    }
+
+    /**
+     * Utilises Tesseract OCR to read text from an image, and output it.
+     * @param readFile The {@link File} from which text will be read.
+     */
+    private void readText(File readFile) {
+        try {
+            String outString = TESS.doOCR(readFile);
+            readFile.delete();
             // If nothing found in selection
             if (outString == null || outString.trim().isEmpty()) {
                 trayIcon.displayMessage("No text found", "Unfortunately, no text could be found in your selection",
