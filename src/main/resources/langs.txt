@@ -14,9 +14,7 @@ cat: Catalan; Valencian
 ceb: Cebuano
 ces: Czech
 chi_sim: Chinese - Simplified
-chi_sim_vert: Chinese - Simplified, Vertical
 chi_tra: Chinese - Traditional
-chi_tra_vert: Chinese - Traditional, Vertical
 chr: Cherokee
 cos: Corsican
 cym: Welsh
@@ -56,7 +54,6 @@ ita: Italian
 ita_old: Italian - Old
 jav: Javanese
 jpn: Japanese
-jpn_vert: Japanese - Vertical
 kan: Kannada
 kat: Georgian
 kat_old: Georgian - Old
@@ -65,7 +62,6 @@ khm: Central Khmer
 kir: Kirghiz; Kyrgyz
 kmr: Kurmanji; Kurdish
 kor: Korean
-kor_vert: Korean - Vertical
 lao: Lao
 lat: Latin
 lav: Latvian
