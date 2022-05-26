@@ -79,7 +79,7 @@ class ClipperPopup extends PopupMenu {
                 tempItem.setState(true); // Tick current language
             }
             tempItem.addItemListener(e -> {
-                ScreenClipper.TESS.setLanguage(lang);
+                app.setLang(lang);
 
                 // Ensure that all checkboxes other than current one are disabled.
                 for (int i=0; i<langs.size(); i++) {

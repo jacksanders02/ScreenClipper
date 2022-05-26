@@ -296,8 +296,8 @@ public class ScreenClipper implements IntellitypeListener, HotkeyListener {
                     LOG.info("Read text from screen capture successfully.");
                 }
             } else {
-                trayIcon.displayMessage("Language file for not found!", "Try reinstalling data for " +
-                                        LANG_MAP.get(currentLang) + " through the language manager.",
+                trayIcon.displayMessage("Language file for " + LANG_MAP.get(currentLang) + "not found!",
+                                        "Try reinstalling it through the language manager, or select a different language",
                                         TrayIcon.MessageType.ERROR);
             }
             //readFile.delete();
