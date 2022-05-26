@@ -32,10 +32,14 @@ class ClipperPopup extends PopupMenu {
     /** Language management frame */
     LanguageManager lm;
 
+    /** The controlling instance of {@link ScreenClipper} */
+    ScreenClipper app;
+
     /**
      * Construct a basic popup menu
      */
-    protected ClipperPopup() {
+    protected ClipperPopup(ScreenClipper sc) {
+        app = sc;
         reset();
     }
 
@@ -67,6 +71,9 @@ class ClipperPopup extends PopupMenu {
 
         for (String lang : langs) {
             CheckboxMenuItem tempItem = new CheckboxMenuItem(ScreenClipper.LANG_MAP.get(lang));
+            if (app.getLang().equals(lang)) {
+                tempItem.setState(true); // Tick current language
+            }
             tempItem.addItemListener(e -> {
                 ScreenClipper.TESS.setLanguage(lang);
 

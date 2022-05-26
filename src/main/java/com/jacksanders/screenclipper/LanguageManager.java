@@ -86,10 +86,12 @@ class LanguageManager extends JFrame {
         // Pack language selection panel into scroll pane, as list is long and scrolling will be needed
         JScrollPane addScroll = new JScrollPane(langDownloadSelectPanel);
         addScroll.setSize(250, 400);
+        addScroll.getVerticalScrollBar().setUnitIncrement(16); // Update speed to normal level
 
         // Create scroll pane for deleting languages
         JScrollPane deleteScroll = new JScrollPane(langDeleteSelectPanel);
         deleteScroll.setSize(250, 400);
+        deleteScroll.getVerticalScrollBar().setUnitIncrement(16);
 
         // Setup download button and add action listener
         JButton dlButton = new JButton("Install Selected Languages");
@@ -200,6 +202,7 @@ class LanguageManager extends JFrame {
     /**
      * Method to intialise main {@link JPanel} and fill it with checkboxes, to prevent constructor becoming overcrowded
      * @param langs Languages that have already been downloaded
+     * @param addIfIn True to create checkboxes for languages that are installed, otherwise false
      * @return A Jpanel with a checkbox for each undownloaded language
      */
     private JPanel createCheckBoxes(List<String> langs, boolean addIfIn) {

@@ -29,6 +29,7 @@ import com.melloware.jintellitype.JIntellitype;
 
 // Distributed by nguyenq under the Apache 2.0 License. See Legal/LICENSE_tess4j.txt
 import com.recognition.software.jdeskew.ImageDeskew;
+import net.sourceforge.lept4j.ILeptonica;
 import net.sourceforge.tess4j.util.ImageHelper;
 import net.sourceforge.tess4j.Tesseract1;
 import net.sourceforge.tess4j.ITesseract;
@@ -56,14 +57,17 @@ import java.util.Map;
  * assigning a {@link MonitorOverlay} to each different screen.
  *
  * @author Jack Sanders
- * @version 1.0.0 20/05/2022
+ * @version 1.0.0
  */
 public class ScreenClipper implements IntellitypeListener, HotkeyListener {
-    /** HashMap with language filenames as keys, and their names as values */
-    protected static final Map<String, String> LANG_MAP = parseMapFromFile("langs.txt");
-
     /** {@link Logger} object used to generate .log files */
     protected static final Logger LOG = LogManager.getLogger(ScreenClipper.class);
+
+    /** {@link Map} with language filenames as keys, and their names as values */
+    protected static final Map<String, String> LANG_MAP = parseMapFromFile("langs.txt", true);
+
+    /** {@link Map} of user settings */
+    protected static final Map<String, String> SETTINGS  = parseMapFromFile("config.txt", false);
 
     /** Directory of non-classpath resources */
     protected static final String RESOURCE_DIR = "./resources";
@@ -90,6 +94,13 @@ public class ScreenClipper implements IntellitypeListener, HotkeyListener {
 
     /** Stores a {@link MonitorOverlay} for each screen */
     private final ArrayList<MonitorOverlay> overlays = new ArrayList<>();
+
+    private String currentLang;
+
+    protected ScreenClipper() {
+        currentLang = SETTINGS.get("lang_default");
+        TESS.setLanguage(currentLang);
+    }
 
     public static void main(String[] args) {
 
@@ -135,20 +146,29 @@ public class ScreenClipper implements IntellitypeListener, HotkeyListener {
      * @param fileName The name of the file (on the classpath) from which to construct a map (a file in the form key: value)
      * @return A map constructed from the file
      */
-    protected static Map<String, String> parseMapFromFile(String fileName) {
+    protected static Map<String, String> parseMapFromFile(String fileName, boolean onClassPath) {
         HashMap<String, String> returnMap = new HashMap<>();
 
-        // Get InputStream from file on classpath
-        InputStream is = ScreenClipper.class.getClassLoader().getResourceAsStream(fileName);
+        InputStream is = null;
+        if (onClassPath) {
+            // Get InputStream from file on classpath
+            is = ScreenClipper.class.getClassLoader().getResourceAsStream(fileName);
+        } else {
+            try {
+                is = new FileInputStream(new File(fileName));
+            } catch (FileNotFoundException e) {
+                LOG.error(e.toString());
+            }
+        }
 
         if (is == null) {
-            LOG.error("Error reading language data: Could not find langs.txt on classpath.");
+            LOG.error("Error parsing file " + fileName);
         } else {
             // Create an InputStreamReader to get a char stream, wrap with BufferedReader to read char stream to lines
             BufferedReader lineReader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
 
             // Split each line to key and value & pack to returnMap
-            lineReader.lines().map(s -> s.split(": ")).forEach(s -> returnMap.put(s[0], s[1]));
+            lineReader.lines().map(s -> s.split(":")).forEach(s -> returnMap.put(s[0].trim(), s[1].trim()));
         }
         return returnMap;
     }
@@ -344,12 +364,28 @@ public class ScreenClipper implements IntellitypeListener, HotkeyListener {
             Dimension trayIconSize = systemTray.getTrayIconSize();
             trayIcon = new TrayIcon(appIcon.getScaledInstance(trayIconSize.width, trayIconSize.height, Image.SCALE_SMOOTH), "ScreenClipper");
 
-            trayIcon.setPopupMenu(new ClipperPopup());
+            trayIcon.setPopupMenu(new ClipperPopup(this));
             try {
                 systemTray.add(trayIcon);
             } catch (AWTException e) {
                 LOG.error("Error adding tray icon to system tray: " + e.toString());
             }
         }
+    }
+
+
+    /**
+     * @return The current language being detected
+     */
+    protected String getLang() {
+        return currentLang;
+    }
+
+    /**
+     * @param l The language to detect
+     */
+    protected void setLang(String l) {
+        currentLang = l;
+        TESS.setLanguage(currentLang);
     }
 }
