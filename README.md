@@ -10,7 +10,7 @@ Ever watched a nice person on youtube explaining the basics of ```public static 
 
 ## Installation
 ### Version 1.0.0
-Download the .zip, and extract to a location of your choosing. Run ScreenClipper.exe to start the program
+Download the .zip [here](https://github.com/JSanders02/ScreenClipper/releases/download/alpha-release/screenclipper__v_1_0_0.zip), and extract to a location of your choosing. Run ScreenClipper.exe to start the program
 
 ## Usage Instructions
 To use the program, simply run the .exe, and it will start in your system tray (the bottom-right of your screen, next to the volume indicator). Sometimes you may have to click on the little arrow to show the app's icon.
