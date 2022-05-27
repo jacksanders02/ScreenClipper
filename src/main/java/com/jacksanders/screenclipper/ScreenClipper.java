@@ -29,7 +29,6 @@ import com.melloware.jintellitype.JIntellitype;
 
 // Distributed by nguyenq under the Apache 2.0 License. See Legal/LICENSE_tess4j.txt
 import com.recognition.software.jdeskew.ImageDeskew;
-import net.sourceforge.lept4j.ILeptonica;
 import net.sourceforge.tess4j.util.ImageHelper;
 import net.sourceforge.tess4j.Tesseract1;
 import net.sourceforge.tess4j.ITesseract;
@@ -49,7 +48,6 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -65,10 +63,10 @@ public class ScreenClipper implements IntellitypeListener, HotkeyListener {
     protected static final Logger LOG = LogManager.getLogger(ScreenClipper.class);
 
     /** {@link Map} with language filenames as keys, and their names as values */
-    protected static final Map<String, String> LANG_MAP = parseMapFromFile("langs.txt", true);
+    protected static Map<String, String> LANG_MAP;
 
     /** {@link Map} of user settings */
-    protected static final Map<String, String> SETTINGS  = parseMapFromFile("config.txt", false);
+    protected static Map<String, String> SETTINGS;
 
     /** Directory of non-classpath resources */
     protected static final String RESOURCE_DIR = "./resources";
@@ -84,14 +82,14 @@ public class ScreenClipper implements IntellitypeListener, HotkeyListener {
 
     // Static code block to initialise class variables
     static {
-        TESS.setDatapath(RESOURCE_DIR + "/tessdata");
-        TESS.setOcrEngineMode(1); // Neural Net LSTM engine
-        // Handle AWTException in robot creation
         try {
             robot = new Robot();
-        } catch (AWTException e) {
-            LOG.error(e.toString());
+            TESS.setDatapath(RESOURCE_DIR + "/tessdata");
+        } catch (Exception e) {
+            forceClose(e.toString());
         }
+
+        TESS.setOcrEngineMode(1); // Neural Net LSTM engine
     }
 
     /** Stores a {@link MonitorOverlay} for each screen */
@@ -124,14 +122,25 @@ public class ScreenClipper implements IntellitypeListener, HotkeyListener {
         // first check to see if an instance of this application is already
         // running, use the name of the window title of this JFrame for checking
         if (JIntellitype.checkInstanceAlreadyRunning("ScreenClipper")) {
+            JOptionPane.showMessageDialog(null, "An instance of ScreenClipper is already running. Please close it before opening another one.",
+                                            "Could not start", JOptionPane.ERROR_MESSAGE);
             System.exit(1);
         }
 
         // next check to make sure JIntellitype DLL can be found and we are on
         // a Windows operating System
         if (!JIntellitype.isJIntellitypeSupported()) {
-            LOG.fatal("Non-Windows operating system, or a problem with the JIntellitype library.");
-            System.exit(1);
+            forceClose("Non-Windows operating system, or a problem with the JIntellitype library.");
+        }
+
+        LANG_MAP = parseMapFromFile("langs.txt", true);
+        if (LANG_MAP == null) {
+            forceClose("Could not find language map data.");
+        }
+
+        SETTINGS = parseMapFromFile("config.txt", true);
+        if (SETTINGS == null) {
+            forceClose("Could not load settings. Please ensure your config.txt is in the same directory as ScreenClipper.exe");
         }
 
         ScreenClipper app = new ScreenClipper();
@@ -141,6 +150,16 @@ public class ScreenClipper implements IntellitypeListener, HotkeyListener {
 
         // Initialise system tray
         app.initSystemTray();
+    }
+
+    /**
+     * Called when an error occurs that the program cannot recover from
+     */
+    protected static void forceClose(String message) {
+        LOG.fatal(message);
+        JOptionPane.showMessageDialog(null, "ScreenClipper encountered an error and was forced to close. Check the log for more details.",
+                "ScreenClipper - Error!", JOptionPane.ERROR_MESSAGE);
+        System.exit(1);
     }
 
 
@@ -159,19 +178,18 @@ public class ScreenClipper implements IntellitypeListener, HotkeyListener {
             try {
                 is = new FileInputStream(new File(fileName));
             } catch (FileNotFoundException e) {
-                LOG.error(e.toString());
+                return null;
             }
         }
 
-        if (is == null) {
-            LOG.error("Error parsing file " + fileName);
-        } else {
+        if (is != null) {
             // Create an InputStreamReader to get a char stream, wrap with BufferedReader to read char stream to lines
             BufferedReader lineReader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
 
             // Split each line to key and value & pack to returnMap
             lineReader.lines().map(s -> s.split(":")).forEach(s -> returnMap.put(s[0].trim(), s[1].trim()));
         }
+
         return returnMap;
     }
 
@@ -353,7 +371,7 @@ public class ScreenClipper implements IntellitypeListener, HotkeyListener {
             LOG.info("JIntellitype initialized");
             registerHotkeys();
         } catch (RuntimeException ex) {
-            LOG.fatal("Either you are not on Windows, or there is a problem with the JIntellitype library.");
+            forceClose("Either you are not on Windows, or there is a problem with the JIntellitype library.");
         }
     }
 
