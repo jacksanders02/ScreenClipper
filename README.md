@@ -9,7 +9,7 @@ Ever watched a nice person on youtube explaining the basics of ```public static 
 - [Dependencies](https://github.com/JSanders02/ScreenClipper/edit/master/README.md#dependencies)
 
 ## Installation
-### Version 1.0.0
+### Version <1.0.0
 Download the .zip [here](https://github.com/JSanders02/ScreenClipper/releases/download/alpha-release/screenclipper__v_1_0_0.zip), and extract to a location of your choosing. Run ScreenClipper.exe to start the program
 
 ## Usage Instructions
