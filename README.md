@@ -10,7 +10,7 @@ Ever watched a nice person on youtube explaining the basics of ```public static 
 
 ## Installation
 ### Version <1.0.0
-Download the .zip [here](https://github.com/JSanders02/ScreenClipper/releases/download/alpha-release/screenclipper__v_1_0_0.zip), and extract to a location of your choosing. Run ScreenClipper.exe to start the program
+Download the .zip [here](https://github.com/JSanders02/ScreenClipper/releases/download/v0.2.0-alpha/screenclipper__v_0_2_0_alpha.zip), and extract to a location of your choosing. Run ScreenClipper.exe to start the program
 
 ## Usage Instructions
 To use the program, simply run the .exe, and it will start in your system tray (the bottom-right of your screen, next to the volume indicator). Sometimes you may have to click on the little arrow to show the app's icon.
@@ -19,7 +19,7 @@ If you want to copy some text:
 2) Drag your mouse to draw a box around the area you want to copy text from (for best results, ensure the area does not contain anything other than desired text, as any artifacts in the selection area could erroneously be read as characters).
 3) You will get a notification (if enabled) informing you of whether or not any text was selected, and what that text was.
 
-![GIF instructions on ScreenClipper's usage](https://user-images.githubusercontent.com/43889196/170590234-5034b1a2-6cd3-4e7b-8606-687d5c33289a.gif)
+![GIF instructions on ScreenClipper's usage](https://user-images.githubusercontent.com/43889196/170685345-d3314ee0-d5b8-43a8-820f-f6a8c8e40687.gif)
 
 If you want to change the language you are selecting (e.g. English -> Chinese):
 1) Right-click on the app's icon and hover your cursor over "Select Language". This will open a submenu of all installed languages.
@@ -32,7 +32,7 @@ If you want to install a new language, or remove language data for one you don't
 2) To install new languages, tick the boxes next to the languages you want to install, and click on "Install Selected Languages"
 3) To remove old languages, tick the boxes next to the languages you want to remove, and click on "Remove Selected Languages"
 
-![GIF instructions on adding/removing languages](https://user-images.githubusercontent.com/43889196/170591089-e6bd7913-9ac4-4e8a-a173-77aa2446106a.gif)
+![GIF instructions on adding/removing languages](https://user-images.githubusercontent.com/43889196/170687998-a49037a5-199b-4c9f-97ba-98c06a11d74f.gif)
 
 ## Dependencies
 This app directly uses the following third-party libraries. Their licenses can be found in Legal/LICENSE_repository_name.txt
