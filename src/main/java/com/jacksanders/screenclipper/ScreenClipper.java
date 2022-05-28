@@ -17,6 +17,12 @@
 
 package com.jacksanders.screenclipper;
 
+// Distributed by Kong under the MIT License. See Legal/LICENSE_unirest.txt
+import kong.unirest.HttpResponse;
+import kong.unirest.JsonNode;
+import kong.unirest.Unirest;
+////
+
 // Distributed by Formdev under the Apache 2.0 License. See Legal/LICENSE_flatlaf.txt
 import com.formdev.flatlaf.FlatLightLaf;
 ////
@@ -46,6 +52,8 @@ import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -59,6 +67,9 @@ import java.util.Map;
  * @version 1.0.0
  */
 public class ScreenClipper implements IntellitypeListener, HotkeyListener {
+    /** The current release version */
+    protected static final String RELEASE_TAG = "v1.1.0";
+
     /** {@link Logger} object used to generate .log files */
     protected static final Logger LOG = LogManager.getLogger(ScreenClipper.class);
 
@@ -103,7 +114,6 @@ public class ScreenClipper implements IntellitypeListener, HotkeyListener {
     }
 
     public static void main(String[] args) {
-
         // Initialise look and feel. Start with Flat LAF, then try system default, then try swing default.
         try {
             UIManager.setLookAndFeel(new FlatLightLaf());
@@ -111,19 +121,60 @@ public class ScreenClipper implements IntellitypeListener, HotkeyListener {
             LOG.error("Failed to initialise L&F. Reverting to system default");
             try {
                 UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            } catch (ClassNotFoundException |
-                     InstantiationException |
-                     IllegalAccessException |
-                     UnsupportedLookAndFeelException e) {
+            } catch (Exception e) {
                 LOG.error("Failed to get system default L&F. Reverting to Swing default");
             }
         }
 
+        // Ensure os is windows
+        String os = System.getProperty("os.name").toLowerCase();
+        if (!os.contains("win")) {
+            forceClose("Non-windows operating system detected!");
+        }
+
+        try {
+            HttpResponse<JsonNode> apiCall = Unirest.get("https://api.github.com/repos/JSanders02/ScreenClipper/releases").asJson();
+
+            String latest = apiCall.getBody().getArray().getJSONObject(0).get("tag_name").toString(); // Latest release of ScreenClipper
+            if (!latest.equals(RELEASE_TAG)) {
+                int dlRelease = JOptionPane.showConfirmDialog(null, "A new version of ScreenClipper (" + latest + ") is available for download." +
+                                "\nVisit repository to download now? (Currently running version is " + RELEASE_TAG + ")",
+                                "Update Detected!", JOptionPane.YES_NO_OPTION);
+                if (dlRelease == 0) {
+                    Desktop.getDesktop().browse(new URI("https://github.com/JSanders02/ScreenClipper"));
+                    System.exit(1);
+                } else {
+                    initScreenClipper();
+                }
+            } else {
+                initScreenClipper();
+            }
+
+        } catch (IOException | URISyntaxException e) {
+            LOG.error("Failed to check for latest version!" + e.toString());
+
+            int opt = JOptionPane.showConfirmDialog(null, "Failed to check for latest ScreenClipper version. Continue anyway?",
+                        "Failed to Connect!", JOptionPane.YES_NO_OPTION);
+
+            if (opt == 0) {
+                initScreenClipper();
+            } else {
+                System.exit(1);
+            }
+        }
+
+
+    }
+
+    /**
+     * Initialises the program after version check
+     */
+    private static void initScreenClipper() {
         // first check to see if an instance of this application is already
         // running, use the name of the window title of this JFrame for checking
         if (JIntellitype.checkInstanceAlreadyRunning("ScreenClipper")) {
             JOptionPane.showMessageDialog(null, "An instance of ScreenClipper is already running. Please close it before opening another one.",
-                                            "Could not start", JOptionPane.ERROR_MESSAGE);
+                    "Could not start", JOptionPane.ERROR_MESSAGE);
             System.exit(1);
         }
 
