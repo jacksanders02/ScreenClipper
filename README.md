@@ -7,6 +7,7 @@ Ever watched a nice person on youtube explaining the basics of ```public static 
 - [Installation](https://github.com/JSanders02/ScreenClipper/edit/master/README.md#installation)
 - [Usage Instructions](https://github.com/JSanders02/ScreenClipper/edit/master/README.md#usage-instructions)
 - [Dependencies](https://github.com/JSanders02/ScreenClipper/edit/master/README.md#dependencies)
+- [Additional Acknowledgements](https://github.com/JSanders02/ScreenClipper/edit/master/README.md#additional-acknowledgements)
 
 ## Installation
 ### Alpha Versions
@@ -41,3 +42,7 @@ This app directly uses the following third-party libraries. Their licenses can b
 - [Tess4j](https://github.com/nguyenq/tess4j)
 - [Log4j2](https://github.com/apache/logging-log4j2)
 - [FlatLaf](https://github.com/JFormDesigner/FlatLaf)
+
+## Additional Acknowledgements
+This app was packaged to a .exe file using [Launch4j](http://launch4j.sourceforge.net/).
+The setup file was created using [Inno Setup](https://jrsoftware.org/isinfo.php).
