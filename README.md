@@ -11,7 +11,7 @@ Ever watched a nice person on youtube explaining the basics of ```public static 
 
 ## Installation
 ### V1.0.0 Onwards
-Download the latest .zip [here]([https://github.com/JSanders02/ScreenClipper/releases/download/v0.2.0-alpha/screenclipper__v_0_2_0_alpha.zip](https://github.com/JSanders02/ScreenClipper/releases/download/v1.0.0/ScreenClipper_Setup.zip)), and run the setup .exe inside. Once installed, simply run ScreenClipper.exe.
+Download the latest .zip [here](https://github.com/JSanders02/ScreenClipper/releases/download/v0.2.0-alpha/screenclipper__v_0_2_0_alpha.zip), and run the setup .exe inside. Once installed, simply run ScreenClipper.exe.
 
 ## Usage Instructions
 To use the program, simply run the .exe, and it will start in your system tray (the bottom-right of your screen, next to the volume indicator). Sometimes you may have to click on the little arrow to show the app's icon.
