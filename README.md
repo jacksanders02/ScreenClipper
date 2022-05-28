@@ -4,10 +4,10 @@
 Ever watched a nice person on youtube explaining the basics of ```public static void main(String[] args)``` and wanted to just copy-paste all that clean, working code from their video?  Well with ScreenClipper, now you can! This app utilises [Tesseract Open-Source OCR Engine](https://github.com/tesseract-ocr/tesseract), and the [Tess4j](https://github.com/nguyenq/tess4j) JNA Wrapper to enable you to simply copy-paste text directly from any image, or video. 
 
 ## Quick Links
-- [Installation](https://github.com/JSanders02/ScreenClipper/edit/master/README.md#installation)
-- [Usage Instructions](https://github.com/JSanders02/ScreenClipper/edit/master/README.md#usage-instructions)
-- [Dependencies](https://github.com/JSanders02/ScreenClipper/edit/master/README.md#dependencies)
-- [Additional Acknowledgements](https://github.com/JSanders02/ScreenClipper/edit/master/README.md#additional-acknowledgements)
+- [Installation](https://github.com/JSanders02/ScreenClipper#installation)
+- [Usage Instructions](https://github.com/JSanders02/ScreenClipper#usage-instructions)
+- [Dependencies](https://github.com/JSanders02/ScreenClipper#dependencies)
+- [Additional Acknowledgements](https://github.com/JSanders02/ScreenClipper#additional-acknowledgements)
 
 ## Installation
 ### Alpha Versions
