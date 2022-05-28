@@ -138,7 +138,7 @@ public class ScreenClipper implements IntellitypeListener, HotkeyListener {
             forceClose("Could not find language map data.");
         }
 
-        SETTINGS = parseMapFromFile("config.txt", true);
+        SETTINGS = parseMapFromFile("config.txt", false);
         if (SETTINGS == null) {
             forceClose("Could not load settings. Please ensure your config.txt is in the same directory as ScreenClipper.exe");
         }
